@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const multer = require("multer");
-const blogController = require("../controllers/blogController");
+const controller = require("../controllers/genreContoller");
 
 // SET STORAGE
 const storage = multer.diskStorage({
@@ -15,10 +15,10 @@ const storage = multer.diskStorage({
 
 const uploads = multer({ storage });
 
-router.get("/", blogController.getAll);
-router.get("/:id", blogController.getOne);
-router.post("/", uploads.single("media"), blogController.save);
-router.put("/:id", uploads.single("media"), blogController.update);
+router.get("/", controller.getAll);
+router.get("/:id", controller.getOne);
+router.post("/", controller.save);
+router.put("/:id", controller.update);
 
 
 module.exports = router;

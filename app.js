@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const userRouter = require("./routes/userRoutes");
 const blogRouter = require("./routes/blogRoutes");
+const genreRouter = require("./routes/genreRouter");
 
 app.get("/", (req, res) => res.send("Welcome to Write Away app"));
 
@@ -22,15 +23,25 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serving images folder
+// app.use("/images", express.static("/media/"));
+// view engine setup
+// app.use(express.static("media"));
+app.use("/images", express.static(`${__dirname}/media`));
+
 // Routers
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/blog", blogRouter);
+app.use("/api/v1/genre", genreRouter);
 
 // 404 - NOT FOUND ROUTE
 app.all("*", (req, res, next) => {
 // next(new AppError(`Reuested resource, ${req.originalUrl} not found!`, 404));
   next(new Error("App error"));
-  res.send("URL NOT FOUND");
+  res.status(404).json({
+    message: "Page Not Found",
+    status: "Failure",
+  });
 });
 
 module.exports = app;

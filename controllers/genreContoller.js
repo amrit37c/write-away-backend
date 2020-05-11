@@ -1,9 +1,8 @@
-const Blog = require("../models/blogsModel");
+const Genre = require("../models/genreModel");
 
 exports.save = (async (req, res) => {
   try {
-    req.body.media = `${req.file.filename}`;
-    const result = await Blog(req.body).save();
+    const result = await Genre(req.body).save();
     if (result) {
       return res.status(201).json({
         message: "Blog Created",
@@ -22,21 +21,8 @@ exports.getAll = (async (req, res) => {
   try {
     const query = req.query || { };
     const sort = { createdAt: -1 };
-    const now = new Date();
 
-    if (query.isPublished === "today") {
-      query.isPublished = true;
-
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      query.createdAt = { $gte: today };
-    } else if (query.isPublished === "yesterday") {
-      query.isPublished = true;
-
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      query.createdAt = { $lte: today };
-    }
-    console.log(query);
-    const result = await Blog.find(query).sort(sort);
+    const result = await Genre.find(query).sort(sort);
     if (result) {
       return res.status(200).json({
         message: "Data Found",
@@ -55,8 +41,7 @@ exports.getOne = (async (req, res) => {
   try {
     const { id: _id } = req.params;
     const query = { _id };
-    // console.log("req", req.params);
-    const result = await Blog.find(query);
+    const result = await Genre.find(query);
     if (result) {
       return res.status(200).json({
         message: "Data Found",
@@ -78,7 +63,7 @@ exports.delete = (async (req, res) => {
     const update = { isDeleted: true };
 
     // console.log("req", req.params);
-    const result = await Blog.update(query, update);
+    const result = await Genre.update(query, update);
     if (result) {
       return res.status(200).json({
         message: "Data Deleted",
@@ -99,8 +84,7 @@ exports.delete = (async (req, res) => {
 
 exports.update = (async (req, res) => {
   try {
-    // const query = { _id: mongoose.Types.ObjectId(req.params.id) };
-    const result = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const result = await Genre.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (result) {
       return res.status(200).json({
         message: "Blog Updated",
