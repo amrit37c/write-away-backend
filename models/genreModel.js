@@ -7,7 +7,7 @@ const schema = new mongoose.Schema({
     required: [true, "Title is required"],
   },
   topicMedia: {
-    type: String,
+    type: Array,
     trim: true,
   },
   createdBy: {

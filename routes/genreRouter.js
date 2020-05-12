@@ -17,8 +17,8 @@ const uploads = multer({ storage });
 
 router.get("/", controller.getAll);
 router.get("/:id", controller.getOne);
-router.post("/", controller.save);
-router.put("/:id", controller.update);
+router.post("/", uploads.array("media", 5), controller.save);
+router.put("/:id", uploads.array("media", 5), controller.update);
 
 
 module.exports = router;

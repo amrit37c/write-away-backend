@@ -2,6 +2,13 @@ const Genre = require("../models/genreModel");
 
 exports.save = (async (req, res) => {
   try {
+    console.log('req' , req.files);
+    // req.body.topicMedia.
+    const mediaFiles = [];
+    req.files.forEach(file => {
+      mediaFiles.push(file.filename);
+    });
+    req.body.topicMedia = mediaFiles;
     const result = await Genre(req.body).save();
     if (result) {
       return res.status(201).json({
