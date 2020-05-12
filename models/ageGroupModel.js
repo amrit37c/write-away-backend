@@ -29,4 +29,4 @@ function arrayLimit(val) {
     return val.length <= 2;
   }
 
-module.exports = mongoose.model("genre", schema);
+module.exports = mongoose.model("agegroup", schema);

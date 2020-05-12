@@ -1,18 +1,14 @@
-const Genre = require("../models/genreModel");
+const AgeGroup = require("../models/ageGroupModel");
 
 exports.save = (async (req, res) => {
   try {
-    console.log('req' , req.files);
-    // req.body.topicMedia.
-    const mediaFiles = [];
-    req.files.forEach(file => {
-      mediaFiles.push(file.filename);
-    });
-    req.body.topicMedia = mediaFiles;
-    const result = await Genre(req.body).save();
+    const { ageRange } = req.body;
+    const rangeArr = getAgeRange(ageRange);
+    req.body.ageRange = rangeArr;
+    const result = await AgeGroup(req.body).save();
     if (result) {
       return res.status(201).json({
-        message: "Genre Created",
+        message: "Age Group Created",
         status: "Success",
         data: result,
       });
@@ -29,7 +25,7 @@ exports.getAll = (async (req, res) => {
     const query = req.query || { };
     const sort = { createdAt: -1 };
 
-    const result = await Genre.find(query).sort(sort);
+    const result = await AgeGroup.find(query).sort(sort);
     if (result) {
       return res.status(200).json({
         message: "Data Found",
@@ -48,7 +44,7 @@ exports.getOne = (async (req, res) => {
   try {
     const { id: _id } = req.params;
     const query = { _id };
-    const result = await Genre.find(query);
+    const result = await AgeGroup.find(query);
     if (result) {
       return res.status(200).json({
         message: "Data Found",
@@ -70,7 +66,7 @@ exports.delete = (async (req, res) => {
     const update = { isDeleted: true };
 
     // console.log("req", req.params);
-    const result = await Genre.update(query, update);
+    const result = await AgeGroup.update(query, update);
     if (result) {
       return res.status(200).json({
         message: "Data Deleted",
@@ -91,10 +87,13 @@ exports.delete = (async (req, res) => {
 
 exports.update = (async (req, res) => {
   try {
-    const result = await Genre.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { ageRange } = req.body;
+    const rangeArr = getAgeRange(ageRange);
+    req.body.ageRange = rangeArr;
+    const result = await AgeGroup.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (result) {
       return res.status(200).json({
-        message: "Genre Updated",
+        message: "Age Group Updated",
         status: "Success",
         data: result,
       });
@@ -106,3 +105,9 @@ exports.update = (async (req, res) => {
     });
   }
 });
+
+
+function getAgeRange(range){
+  const ageRangeArr = range.split(',');
+  return ageRangeArr;
+} 

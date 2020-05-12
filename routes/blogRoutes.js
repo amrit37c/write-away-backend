@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
     cb(null, "media/");
   },
   filename(req, file, cb) {
-    const ext = file.originalname.split(".")[1];
+    const ext = file.originalname.split(".").pop();
     cb(null, `${file.fieldname}-${Date.now()}.${ext}`);
   },
 });

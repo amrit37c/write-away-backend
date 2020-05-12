@@ -10,6 +10,14 @@ const schema = new mongoose.Schema({
     type: Array,
     trim: true,
   },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
   },
