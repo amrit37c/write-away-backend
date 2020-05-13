@@ -31,7 +31,7 @@ exports.getAll = (async (req, res) => {
     const query = req.query || { };
     const sort = { createdAt: -1 };
 
-    const result = await Publication.find(query).sort(sort);
+    const result = await Publication.find(query).populate('ageGroup', 'ageRange').populate('genres', 'title').sort(sort);
     if (result) {
       return res.status(200).json({
         message: "Data Found",

@@ -27,6 +27,6 @@ const schema = new mongoose.Schema({
 
 function arrayLimit(val) {
     return val.length <= 2;
-  }
+}
 
 module.exports = mongoose.model("agegroup", schema);

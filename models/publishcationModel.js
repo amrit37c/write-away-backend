@@ -22,7 +22,7 @@ const schema = new mongoose.Schema({
   },
   genres: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'genres'
+    ref: 'genre'
   },
   genreDescription: {
     type: String,
@@ -34,7 +34,7 @@ const schema = new mongoose.Schema({
   },
   ageGroup: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'agegroups'
+    ref: 'agegroup'
   },
   kickstarter:{
     type: String,
@@ -52,8 +52,14 @@ const schema = new mongoose.Schema({
   },
   isPublished: {
     type: Boolean,
-    default: false,
+    default: false, // true - if published, false - draft mode
   },
+  publicationStatus:{
+    type: String,
+    enum: [1,2,3,4],   // 1 - unopen, 2- open, 3 - closed, 4 - rejected 
+    default: 1
+  },
+  // git
   isDeleted: {
     type: Boolean,
     default: false,
@@ -63,10 +69,13 @@ const schema = new mongoose.Schema({
     enum: [1,2,3] // 1 - open for all, 2 - open for self, 3 - open for invitees only
   },
   wordCount:{
-    type: String,
+    // type: String,
+    // trim: true,
+    // required:[false],
+    // length: { min: 0, max: 32 }
+    type: Array,
     trim: true,
-    required:[false],
-    length: { min: 0, max: 32 }
+    validate: [arrayLimit]
   },
   commercials:{
     type: String,
@@ -81,7 +90,23 @@ const schema = new mongoose.Schema({
   },
   categoryContent: {
     type: String,
+  },
+  followers:{
+    type: mongoose.Schema.ObjectId,
+    ref: 'users'
+  },
+  publishedBy:{
+    type: String,
+    default: 'Admin'
   }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 });
+
+function arrayLimit(val) {
+  return val.length <= 2;
+}
 
 module.exports = mongoose.model("publication", schema);
