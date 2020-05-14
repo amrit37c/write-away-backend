@@ -20,6 +20,6 @@ router.get("/", controller.getAll);
 router.get("/:id", controller.getOne);
 router.post("/", uploads.fields([{ name: "mediaCover" , maxCount: 1}, {name: "categoryContent" , maxCount: 1}]), controller.save);
 router.put("/:id",uploads.fields([{ name: "mediaCover" , maxCount: 1}, {name: "categoryContent" , maxCount: 1}]), controller.update);
-
+router.post("/user-content", controller.saveUserPublication);
 
 module.exports = router;

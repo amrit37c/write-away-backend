@@ -1,4 +1,5 @@
 const Publication = require("../models/publishcationModel");
+const UserPublication = require("../models/userPublishcationModel");
 
 exports.save = (async (req, res) => {
   try {
@@ -115,3 +116,23 @@ exports.update = (async (req, res) => {
     });
   }
 });
+
+
+
+exports.saveUserPublication = (async (req, res) => {
+    try {
+      const result = await UserPublication(req.body).save();
+      if (result) {
+        return res.status(201).json({
+          message: "User Publication Created",
+          status: "Success",
+          data: result,
+        });
+      }
+    } catch (err) {
+      return res.status(409).json({
+        message: err.message,
+        status: "Failure",
+      });
+    }
+  });
