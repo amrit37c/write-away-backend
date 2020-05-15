@@ -98,7 +98,23 @@ const schema = new mongoose.Schema({
   publishedBy:{
     type: String,
     default: 'Admin'
-  }
+  },
+  // readCount: {
+  //   type: [mongoose.Schema.Types.ObjectId],
+  //   ref: 'User'
+  // },
+  // likeCount: {
+  //   type: [mongoose.Schema.Types.ObjectId],
+  //   ref: 'User'
+  // },
+  // shareCount: {
+  //   type: [mongoose.Schema.Types.ObjectId],
+  //   ref: 'User'
+  // },
+  // copiesCount: {
+  //   type: [mongoose.Schema.Types.ObjectId],
+  //   ref: 'User'
+  // },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

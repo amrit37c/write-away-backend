@@ -40,9 +40,10 @@ app.use("/api/v1/age-group", ageGroupRouter);
 app.use("/api/v1/publication", publicationRouter);
 
 // 404 - NOT FOUND ROUTE
-app.all("*", (req, res, next) => {
+app.all("*", (req, res, next, err) => {
 // next(new AppError(`Reuested resource, ${req.originalUrl} not found!`, 404));
-  next(new Error("App error"));
+  console.log('>>', err)
+  next(new Error("App error")); 
   res.status(404).json({
     message: "Page Not Found",
     status: "Failure",

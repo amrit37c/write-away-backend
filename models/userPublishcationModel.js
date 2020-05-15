@@ -6,8 +6,13 @@ const schema = new mongoose.Schema({
     trim: true,
     required: [true, "Title is required"],
   },
+
   mediaAvailable: {
-    type: mongoose.Schema.Types.ObjectId,
+      type:[String],
+      ref: 'genre'
+  },
+  genre: {
+    type:[mongoose.Schema.Types.ObjectId],
     ref: 'genre'
   },
   publicationId: {
@@ -21,7 +26,7 @@ const schema = new mongoose.Schema({
   },
   isActive: {
     type: Boolean,
-    default: false,
+    default: false, // true - content sent for publish , false - draft mode
   },
   isPublished: {
     type: Boolean,

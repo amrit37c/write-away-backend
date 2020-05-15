@@ -51,7 +51,7 @@ exports.getOne = (async (req, res) => {
   try {
     const { id: _id } = req.params;
     const query = { _id };
-    const result = await Publication.find(query);
+    const result = await Publication.find(query).populate('ageGroup', 'ageRange').populate('genres');
     if (result) {
       return res.status(200).json({
         message: "Data Found",
