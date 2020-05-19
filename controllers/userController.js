@@ -50,8 +50,9 @@ exports.loginUser = (async (req, res) => {
 
       const check = bcrypt.compareSync(password, hashDbPassword); // true
       if (check) {
-        const { firstName } = result[0];
-        const token = jwt.sign({ firstName }, jwtKey, {
+        const { firstName,id:_id } = result[0];
+        
+        const token = jwt.sign({ id: _id,  firstName }, jwtKey, {
           algorithm: "HS256",
           expiresIn: jwtExpirySeconds,
         });
@@ -79,6 +80,24 @@ exports.loginUser = (async (req, res) => {
     console.log("err", err.message);
     return res.status(501).json({
       message: err.message,
+      status: "Failure",
+    });
+  }
+});
+
+exports.update = (async (req, res) => {
+  try {
+    const result = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (result) {
+      return res.status(200).json({
+        message: "User Updated",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
       status: "Failure",
     });
   }

@@ -25,6 +25,21 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: [false],
     },
+    guardianDob: {
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    guardianMobile: {
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    guardianLandline: {
+      type: String,
+      trim: true,
+      required: [false],
+    },
     firstName: {
       type: String,
       trim: true,
@@ -34,6 +49,20 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: [true, "A user must have lastname"],
+    },
+    displayName: {
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    selectDisplayName: {
+      type: Boolean,
+      default: false,
+    },
+    aboutInfo: {
+      type: String,
+      trim: true,
+      required: [false],
     },
     password: {
       type: String,
@@ -47,13 +76,69 @@ const userSchema = new mongoose.Schema(
     },
     dob: {
       type: String,
+      trim: true,
       required: [true, "Please provide the dob"],
     },
-
-    isActive: {
+    gender:{
+      type: String,
+      trim: true,
+      enum: ["male", "female"]
+    },
+    mobile:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    landline:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    school:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    class:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    section:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    address:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    country:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    state:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    city:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    zipCode:{
+      type: String,
+      trim: true,
+      required: [false],
+    },
+     isActive: {
       type: Boolean,
       default: true,
     },
+    
     isDeleted: {
       type: Boolean,
       default: false,
