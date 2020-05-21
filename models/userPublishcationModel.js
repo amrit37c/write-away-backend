@@ -4,7 +4,7 @@ const schema = new mongoose.Schema({
   topic: {
     type: String,
     trim: true,
-    required: [true, "Title is required"],
+    required: [false],
   },
 
   mediaAvailable: {
@@ -22,7 +22,7 @@ const schema = new mongoose.Schema({
   content: {
     type: String,
     trim: true,
-    required: [true,"Content is required"],
+    required: [false],
   },
   isActive: {
     type: Boolean,
@@ -40,6 +40,10 @@ const schema = new mongoose.Schema({
   publishedBy:{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  },
+  publicationType:{
+    type: String,
+    enum : ['bookmark', 'writing']
   }
 }, {
   timestamps: true,

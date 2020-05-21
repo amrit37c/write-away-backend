@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const controller = require("../controllers/publicationController");
 const multer = require('multer');
+const middleware = require('./../utils/userUtils');
 
 // SET STORAGE
 const storage = multer.diskStorage({
@@ -16,10 +17,11 @@ const storage = multer.diskStorage({
   
 const uploads = multer({ storage });
 
-router.get("/", controller.getAll);
+router.get("/", middleware.authenticateUser, controller.getAll);
 router.get("/:id", controller.getOne);
 router.post("/", uploads.fields([{ name: "mediaCover" , maxCount: 1}, {name: "categoryContent" , maxCount: 1}]), controller.save);
 router.put("/:id",uploads.fields([{ name: "mediaCover" , maxCount: 1}, {name: "categoryContent" , maxCount: 1}]), controller.update);
-router.post("/user-content", controller.saveUserPublication);
+router.post("/user-content",middleware.authenticateUser, controller.saveUserPublication);
+router.put("/user-content/:id",middleware.authenticateUser, controller.updateUserPublication);
 
 module.exports = router;

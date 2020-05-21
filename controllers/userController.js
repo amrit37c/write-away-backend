@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 
 const jwtKey = "my_secret_key";
 
-const jwtExpirySeconds = 3000;
+const jwtExpirySeconds = '30d';
 
 const salt = bcrypt.genSaltSync(10);
 
