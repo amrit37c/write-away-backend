@@ -5,7 +5,7 @@ const app = require("./app");
 dotenv.config({ path: "./config/.env" });
 // Connect to db
 const DB = `mongodb://localhost:27017/${process.env.DB_NAME}`; // DEV
-
+// const DB = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}:27017/${process.env.DB_NAME}`; // production
 // const DB = process.env.PROD_DB.replace("<PASSWORD>", process.env.PROD_DB_PASS); // PROD
 mongoose
   .connect(DB, {
