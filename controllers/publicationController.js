@@ -1,18 +1,18 @@
+const mongoose = require("mongoose");
 const Publication = require("../models/publishcationModel");
 const UserPublication = require("../models/userPublishcationModel");
-const mongoose = require('mongoose');
 
 exports.save = (async (req, res) => {
   try {
-    console.log('req' , req.files);
-    
-    req.body.mediaCover = `${req.files.mediaCover[0]['filename']}`;
-    
+    console.log("req", req.files);
+
+    req.body.mediaCover = `${req.files.mediaCover[0].filename}`;
+
     const { category } = req.body;
-    if(category !== "1"){
-        req.body.categoryContent = `${req.files.categoryContent[0]['filename']}`;
+    if (category !== "1") {
+      req.body.categoryContent = `${req.files.categoryContent[0].filename}`;
     }
-    
+
     const result = await Publication(req.body).save();
     if (result) {
       return res.status(201).json({
@@ -33,52 +33,59 @@ exports.getAll = (async (req, res) => {
     const query = req.query || { };
     const sort = { createdAt: -1 };
 
-    console.log('req.user.id', req.user);
+    console.log("req.user.id", req.user);
 
     // PREVIOUS QUERY WITH USER PUBLICATION
     // let result = await Publication.find(query).populate('ageGroup', 'ageRange').populate('genres', 'title')
     // .populate('userPublication.publicationId')
-    let finalQuery = [];
-   
+    const finalQuery = [];
+
 
     finalQuery.push(
       {
-        "$lookup": {
+        $lookup: {
           from: "userpublications",
-          "let": { "publicationId": "$_id" },
-          "pipeline": [
-              { "$addFields": 
-                { 
-                  "publicationId": { "$toObjectId": "$publicationId" }
-                } 
-              },
-              { "$match": 
-                { "$expr": 
-                  { "$eq": [ "$publicationId", "$$publicationId" ] }, 
-                  "publishedBy": mongoose.Types.ObjectId(req.user) 
-                } 
-              }
+          let: { publicationId: "$_id" },
+          pipeline: [
+            {
+              $addFields:
+                {
+                  publicationId: { $toObjectId: "$publicationId" },
+                },
+            },
+            {
+              $match:
+                {
+                  $expr:
+                  { $eq: ["$publicationId", "$$publicationId"] },
+                  publishedBy: mongoose.Types.ObjectId(req.user),
+                },
+            },
           ],
-          as: "userPublication"
-        }
+          as: "userPublication",
+        },
       },
-      { "$lookup": {
-        "from": "genres",
-        "localField": "genres",
-        "foreignField": "_id",
-        "as": "genres"
-      }},
-      { "$lookup": {
-        "from": "agegroups",
-        "localField": "ageGroup",
-        "foreignField": "_id",
-        "as": "ageGroup"
-      }},
-      { "$unwind": "$genres" },
-      { "$unwind": "$ageGroup" },
+      {
+        $lookup: {
+          from: "genres",
+          localField: "genres",
+          foreignField: "_id",
+          as: "genres",
+        },
+      },
+      {
+        $lookup: {
+          from: "agegroups",
+          localField: "ageGroup",
+          foreignField: "_id",
+          as: "ageGroup",
+        },
+      },
+      { $unwind: "$genres" },
+      { $unwind: "$ageGroup" },
       {
         $project: {
-          title: 1, mediaCover:  1,brief: 1, gender: 1, genreDescription:1, closingDate:  1, ageGroup: 1, kickstarter:1, kickbookDesc:1, isActive: 1, isPublished:1, publicationStatus:1, publicationRights: 1, wordCount:1, commercials:1, language: 1,category: 1, categoryContent:1, followers:1, genres: "$genres", userPublication: "$userPublication"
+          title: 1, mediaCover: 1, brief: 1, gender: 1, genreDescription: 1, closingDate: 1, ageGroup: 1, kickstarter: 1, kickbookDesc: 1, isActive: 1, isPublished: 1, publicationStatus: 1, publicationRights: 1, wordCount: 1, commercials: 1, language: 1, category: 1, categoryContent: 1, followers: 1, genres: "$genres", userPublication: "$userPublication",
         },
       },
       // {
@@ -86,10 +93,9 @@ exports.getAll = (async (req, res) => {
       //     '$or':[queryFilter]
       //   }
       // }
-    )
-    
-    let result = await Publication.aggregate(finalQuery);
+    );
 
+    const result = await Publication.aggregate(finalQuery);
 
 
     if (result) {
@@ -111,14 +117,14 @@ exports.getOne = (async (req, res) => {
   try {
     const { id: _id } = req.params;
     const query = { _id };
-    let result = await Publication.find(query).populate('ageGroup', 'ageRange').populate('genres').lean();
-    let userPublication = await UserPublication.find({publicationId:_id }).lean();
+    const result = await Publication.find(query).populate("ageGroup", "ageRange").populate("genres").lean();
+    const userPublication = await UserPublication.find({ publicationId: _id }).lean();
     if (result) {
-      result[0]['userPublication'] =  userPublication;
+      result[0].userPublication = userPublication;
       return res.status(200).json({
         message: "Data Found",
         status: "Success",
-        data: result
+        data: result,
       });
     }
   } catch (err) {
@@ -156,12 +162,11 @@ exports.delete = (async (req, res) => {
 
 exports.update = (async (req, res) => {
   try {
-    
-    req.body.mediaCover = `${req.files.mediaCover[0]['filename']}`;
-    
+    req.body.mediaCover = `${req.files.mediaCover[0].filename}`;
+
     const { category } = req.body;
-    if(category !== "1"){
-        req.body.categoryContent = `${req.files.categoryContent[0]['filename']}`;
+    if (category !== "1") {
+      req.body.categoryContent = `${req.files.categoryContent[0].filename}`;
     }
     const result = await Publication.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (result) {
@@ -180,43 +185,42 @@ exports.update = (async (req, res) => {
 });
 
 exports.saveUserPublication = (async (req, res) => {
-    try {
-      req.body.publishedBy = req.user;
-      const result = await UserPublication(req.body).save();
-      if (result) {
-        return res.status(201).json({
-          message: "User Publication Created",
-          status: "Success",
-          data: result,
-        });
-      }
-    } catch (err) {
-      return res.status(409).json({
-        message: err.message,
-        status: "Failure",
+  try {
+    req.body.publishedBy = req.user;
+    const result = await UserPublication(req.body).save();
+    if (result) {
+      return res.status(201).json({
+        message: "User Publication Created",
+        status: "Success",
+        data: result,
       });
     }
-  });
+  } catch (err) {
+    return res.status(409).json({
+      message: err.message,
+      status: "Failure",
+    });
+  }
+});
 
 
 exports.updateUserPublication = (async (req, res) => {
-    try {
-      req.body.publishedBy = req.user;
-      console.log('',req.body )
-      const result = await UserPublication.findByIdAndUpdate(req.params.id, req.body, { new: true });
-      if (result) {
-        return res.status(200).json({
-          message: "User Publication Updated",
-          status: "Success",
-          data: result,
-        });
-      }
-      console.log('>>', result);
-    } catch (error) {
-      return res.status(409).json({
-        message: error.message,
-        status: "Failure",
+  try {
+    req.body.publishedBy = req.user;
+    console.log("", req.body);
+    const result = await UserPublication.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (result) {
+      return res.status(200).json({
+        message: "User Publication Updated",
+        status: "Success",
+        data: result,
       });
     }
+    console.log(">>", result);
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
 });
-  

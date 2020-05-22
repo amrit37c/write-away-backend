@@ -1,4 +1,6 @@
+const mongoose = require("mongoose");
 const Blog = require("../models/blogsModel");
+const BlogLike = require("../models/blogLikesModel");
 
 exports.save = (async (req, res) => {
   try {
@@ -54,16 +56,59 @@ exports.getAll = (async (req, res) => {
 exports.getOne = (async (req, res) => {
   try {
     const { id: _id } = req.params;
-    const query = { _id };
-    // console.log("req", req.params);
-    const result = await Blog.find(query);
+    const query = {
+      _id,
+    };
+
+    // fetch single blog
+    const result = await Blog.find(query).populate("bloglikes");
     if (result) {
+      // fetch blog by like count
+      const likeResult = await BlogLike.find({
+        blogId: _id,
+      }).count();
+
+      // fetch user's like post - user who like or not
+      const userLikeResult = await BlogLike.find({
+        blogId: _id,
+        user: req.user,
+      });
+
+      result[0].likeCount = likeResult;
+      const data = result[0].toJSON();
+      data.userDetail = userLikeResult;
+
       return res.status(200).json({
         message: "Data Found",
         status: "Success",
-        data: result,
+        data,
       });
     }
+
+    // console.log("req", req.params);
+    // const finalQuery = [];
+
+    // finalQuery.push(
+    //   {
+    //     $lookup: {
+    //       from: "bloglikes",
+    //       localField: "_id",
+    //       foreignField: "blogId",
+    //       as: "bloglikes",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       $or: [
+    //         { _id: mongoose.Types.ObjectId(id) },
+    //       ],
+    //     }
+    //     ,
+    //   },
+    // );
+    // console.log(finalQuery);
+
+    // const result = await Blog.aggregate(finalQuery);
   } catch (err) {
     return res.status(404).json({
       message: "No Data Found",
