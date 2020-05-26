@@ -22,7 +22,7 @@ const schema = new mongoose.Schema({
   },
   genres: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'genre'
+    ref: "genre",
   },
   genreDescription: {
     type: String,
@@ -34,17 +34,17 @@ const schema = new mongoose.Schema({
   },
   ageGroup: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'agegroup'
+    ref: "agegroup",
   },
-  kickstarter:{
+  kickstarter: {
     type: String,
     trim: true,
-    required:[false]
+    required: [false],
   },
-  kickbookDesc:{
+  kickbookDesc: {
     type: String,
     trim: true,
-    required:[false]
+    required: [false],
   },
   isActive: {
     type: Boolean,
@@ -54,10 +54,10 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: false, // true - if published, false - draft mode
   },
-  publicationStatus:{
+  publicationStatus: {
     type: String,
-    enum: [1,2,3,4],   // 1 - unopen, 2- open, 3 - closed, 4 - rejected 
-    default: 1
+    enum: [1, 2, 3, 4], // 1 - unopen, 2- open, 3 - closed, 4 - rejected
+    default: 1,
   },
   // git
   isDeleted: {
@@ -66,38 +66,38 @@ const schema = new mongoose.Schema({
   },
   publicationRights: {
     type: String,
-    enum: [1,2,3] // 1 - open for all, 2 - open for self, 3 - open for invitees only
+    enum: [1, 2, 3], // 1 - open for all, 2 - open for self, 3 - open for invitees only
   },
-  wordCount:{
+  wordCount: {
     // type: String,
     // trim: true,
     // required:[false],
     // length: { min: 0, max: 32 }
     type: Array,
     trim: true,
-    validate: [arrayLimit]
+    validate: [arrayLimit],
   },
-  commercials:{
+  commercials: {
     type: String,
-    enum: [1,2,3,4] //1 free writing-reading, 2 paid writing- free reading, 3 free writing- paid reading, 4  paid writing- paid reading
+    enum: [1, 2, 3, 4], // 1 free writing-reading, 2 paid writing- free reading, 3 free writing- paid reading, 4  paid writing- paid reading
   },
   language: {
     type: String,
   },
   category: {
     type: String,
-    enum: [1,2,3,4] // 1 - text, 2 - Image, 3 - Video, 4 - Audio 
+    enum: [1, 2, 3, 4], // 1 - text, 2 - Image, 3 - Video, 4 - Audio
   },
   categoryContent: {
     type: String,
   },
-  followers:{
+  followers: {
     type: mongoose.Schema.ObjectId,
-    ref: 'users'
+    ref: "users",
   },
-  publishedBy:{
+  publishedBy: {
     type: String,
-    default: 'Admin'
+    default: "Admin",
   },
   // readCount: {
   //   type: [mongoose.Schema.Types.ObjectId],

@@ -8,16 +8,16 @@ const schema = new mongoose.Schema({
   },
 
   mediaAvailable: {
-      type:[String],
-      ref: 'genre'
+    type: [String],
+    ref: "genre",
   },
   genre: {
-    type:[mongoose.Schema.Types.ObjectId],
-    ref: 'genre'
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "genre",
   },
   publicationId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'publication'
+    ref: "publication",
   },
   content: {
     type: String,
@@ -36,15 +36,15 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  
-  publishedBy:{
+
+  publishedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: "User",
   },
-  publicationType:{
+  publicationType: {
     type: String,
-    enum : ['bookmark', 'writing']
-  }
+    enum: ["bookmark", "writing"],
+  },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

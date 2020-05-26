@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Publication = require("../models/publishcationModel");
 const UserPublication = require("../models/userPublishcationModel");
+const BookMarkPublication = require("../models/publicationBookMarkModel");
 
 exports.save = (async (req, res) => {
   try {
@@ -217,6 +218,45 @@ exports.updateUserPublication = (async (req, res) => {
       });
     }
     console.log(">>", result);
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+exports.saveBookMark = (async (req, res) => {
+  try {
+    req.body.user = req.user;
+
+    const result = await BookMarkPublication(req.body).save();
+    if (result) {
+      return res.status(201).json({
+        message: "Publication Bookmark Done",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (err) {
+    return res.status(409).json({
+      message: err.message,
+      status: "Failure",
+    });
+  }
+});
+
+exports.updateBookMark = (async (req, res) => {
+  try {
+    req.body.publishedBy = req.user;
+    const result = await BookMarkPublication.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (result) {
+      return res.status(200).json({
+        message: "Publication Bookmark Update",
+        status: "Success",
+        data: result,
+      });
+    }
   } catch (error) {
     return res.status(409).json({
       message: error.message,

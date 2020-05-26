@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
-  likeStatus: {
+  bookMarkStatus: {
     type: "String",
     enum: [0, 1], // 0 - unlike , 1 - unlike
     default: 1,
@@ -21,4 +21,4 @@ const schema = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model("bloglikes", schema);
+module.exports = mongoose.model("blogbookmark", schema);

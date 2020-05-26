@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const BlogLike = require("../models/blogLikesModel");
+const BlogBookMark = require("../models/blogBookMarkModel");
 
 exports.save = (async (req, res) => {
   try {
@@ -12,7 +12,7 @@ exports.save = (async (req, res) => {
     };
     const options = { upsert: true, new: true, setDefaultsOnInsert: true };
 
-    const result = await BlogLike.findOneAndUpdate(query, req.body, options);
+    const result = await BlogBookMark.findOneAndUpdate(query, req.body, options);
 
     return res.status(201).json({
       message: "Blog Like stutus updated",
@@ -31,7 +31,7 @@ exports.save = (async (req, res) => {
 exports.update = (async (req, res) => {
   try {
     req.body.user = req.user;
-    const result = await BlogLike.findByIdAndUpdate(req.body.id, req.body, { new: true });
+    const result = await BlogBookMark.findByIdAndUpdate(req.body.id, req.body, { new: true });
     if (result) {
       return res.status(200).json({
         message: "Blog Like Updated",

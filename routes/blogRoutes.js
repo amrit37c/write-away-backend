@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const multer = require("multer");
 const blogController = require("../controllers/blogController");
-const blogLikeController = require("../controllers/blogLikeController");
+const blogBookMarkController = require("../controllers/blogBookMarkController");
 const middleware = require("../utils/userUtils");
 
 // SET STORAGE
@@ -22,6 +22,10 @@ router.get("/:id", middleware.authenticateLoginUser, blogController.getOne);
 router.post("/", uploads.single("media"), blogController.save);
 router.put("/:id", uploads.single("media"), blogController.update);
 
-router.post("/blog-like/:id", middleware.authenticateLoginUser, blogLikeController.save);
+// router.post("/blog-bookmark/:id", middleware.authenticateLoginUser, blogBookMarkController.save);
 
+
+// bookmark publication for user
+router.post("/blog-bookmark", middleware.authenticateUser, blogController.saveBookMark);
+router.put("/blog-bookmark/:id", middleware.authenticateUser, blogController.updateBookMark);
 module.exports = router;

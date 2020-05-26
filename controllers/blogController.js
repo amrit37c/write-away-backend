@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 const Blog = require("../models/blogsModel");
-const BlogLike = require("../models/blogLikesModel");
+const BlogBookMark = require("../models/blogBookMarkModel");
 
 exports.save = (async (req, res) => {
   try {
@@ -37,7 +37,7 @@ exports.getAll = (async (req, res) => {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
       query.createdAt = { $lte: today };
     }
-    console.log(query);
+
     const result = await Blog.find(query).sort(sort);
     if (result) {
       return res.status(200).json({
@@ -61,15 +61,15 @@ exports.getOne = (async (req, res) => {
     };
 
     // fetch single blog
-    const result = await Blog.find(query).populate("bloglikes");
+    const result = await Blog.find(query).populate("blogbookmarks");
     if (result) {
       // fetch blog by like count
-      const likeResult = await BlogLike.find({
+      const likeResult = await BlogBookMark.find({
         blogId: _id,
       }).count();
 
       // fetch user's like post - user who like or not
-      const userLikeResult = await BlogLike.find({
+      const userLikeResult = await BlogBookMark.find({
         blogId: _id,
         user: req.user,
       });
@@ -149,6 +149,46 @@ exports.update = (async (req, res) => {
     if (result) {
       return res.status(200).json({
         message: "Blog Updated",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+
+exports.saveBookMark = (async (req, res) => {
+  try {
+    req.body.user = req.user;
+
+    const result = await BlogBookMark(req.body).save();
+    if (result) {
+      return res.status(201).json({
+        message: "Blog Bookmark Done",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (err) {
+    return res.status(409).json({
+      message: err.message,
+      status: "Failure",
+    });
+  }
+});
+
+exports.updateBookMark = (async (req, res) => {
+  try {
+    req.body.publishedBy = req.user;
+    const result = await BlogBookMark.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (result) {
+      return res.status(200).json({
+        message: "Blog Bookmark Update",
         status: "Success",
         data: result,
       });
