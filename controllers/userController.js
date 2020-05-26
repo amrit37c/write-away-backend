@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 
 const jwtKey = "my_secret_key";
 
-const jwtExpirySeconds = '30d';
+const jwtExpirySeconds = "30d";
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -50,9 +50,9 @@ exports.loginUser = (async (req, res) => {
 
       const check = bcrypt.compareSync(password, hashDbPassword); // true
       if (check) {
-        const { firstName,id:_id } = result[0];
-        
-        const token = jwt.sign({ id: _id,  firstName }, jwtKey, {
+        const { firstName, id: _id } = result[0];
+
+        const token = jwt.sign({ id: _id, firstName }, jwtKey, {
           algorithm: "HS256",
           expiresIn: jwtExpirySeconds,
         });

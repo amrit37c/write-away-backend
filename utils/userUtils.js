@@ -17,21 +17,22 @@ exports.authenticateUser = (req, res, next) => {
   console.log("token", token);
   // invalid token - synchronous
   try {
-    const { exp } = jwt.verify(token, jwtKey);
-    console.log("decoded", exp);
+    const { exp, id } = jwt.verify(token, jwtKey);
+
     if (Date.now() >= exp * 1000) {
       return res.status(401).json({
         status: "failure",
         message: "Unauthenticated",
       });
     }
+    req.user = id;
     next();
   } catch (err) {
     // err
   }
 };
 
-exports.authenticateUser = (req, res, next) => {
+exports.authenticatedUser = (req, res, next) => {
   try {
     const bearerToken = req.header("authorization");
     // if(!bearerToken){

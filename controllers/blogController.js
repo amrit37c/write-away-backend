@@ -1,6 +1,7 @@
-// const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const Blog = require("../models/blogsModel");
 const BlogBookMark = require("../models/blogBookMarkModel");
+const BlogLike = require("../models/blogLikeModel");
 
 exports.save = (async (req, res) => {
   try {
@@ -26,6 +27,8 @@ exports.getAll = (async (req, res) => {
     const sort = { createdAt: -1 };
     const now = new Date();
 
+    const finalQuery = [];
+
     if (query.isPublished === "today") {
       query.isPublished = true;
 
@@ -38,7 +41,76 @@ exports.getAll = (async (req, res) => {
       query.createdAt = { $lte: today };
     }
 
-    const result = await Blog.find(query).sort(sort);
+
+    finalQuery.push(
+      {
+        $lookup: {
+          from: "blogbookmarks",
+          let: { blogId: "$_id" },
+          pipeline: [
+            {
+              $addFields:
+                {
+                  blogId: { $toObjectId: "$blogId" },
+                },
+            },
+            {
+              $match:
+                {
+                  $expr:
+                  { $eq: ["$blogId", "$$blogId"] },
+                  user: mongoose.Types.ObjectId(req.user),
+                },
+            },
+          ],
+          as: "bookmark",
+        },
+      },
+      {
+        $lookup: {
+          from: "bloglikes",
+          let: { blogId: "$_id" },
+          pipeline: [
+            {
+              $addFields:
+                {
+                  blogId: { $toObjectId: "$blogId" },
+                },
+            },
+            {
+              $match:
+                {
+                  $expr:
+                  { $eq: ["$blogId", "$$blogId"] },
+                  user: mongoose.Types.ObjectId(req.user),
+                },
+            },
+          ],
+          as: "like",
+        },
+      },
+      {
+        $unwind: {
+          path: "$bookmark",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$like",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $or: [query],
+        },
+      },
+    );
+
+
+    // const result = await Blog.find(query).populate({ path: "blogbookmarks" }).sort(sort);
+    const result = await Blog.aggregate(finalQuery);
     if (result) {
       return res.status(200).json({
         message: "Data Found",
@@ -166,6 +238,7 @@ exports.saveBookMark = (async (req, res) => {
   try {
     req.body.user = req.user;
 
+    console.log(">>", req.body);
     const result = await BlogBookMark(req.body).save();
     if (result) {
       return res.status(201).json({
@@ -189,6 +262,68 @@ exports.updateBookMark = (async (req, res) => {
     if (result) {
       return res.status(200).json({
         message: "Blog Bookmark Update",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+
+exports.saveLike = (async (req, res) => {
+  try {
+    req.body.user = req.user;
+
+    console.log(">>", req.body);
+    const result = await BlogLike(req.body).save();
+    if (result) {
+      return res.status(201).json({
+        message: "Blog Like Done",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (err) {
+    return res.status(409).json({
+      message: err.message,
+      status: "Failure",
+    });
+  }
+});
+
+exports.updateLike = (async (req, res) => {
+  try {
+    req.body.publishedBy = req.user;
+    const result = await BlogLike.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (result) {
+      return res.status(200).json({
+        message: "Blog Like Update",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+// Update Read
+exports.updateRead = (async (req, res) => {
+  try {
+    req.body.readCount = req.user;
+
+    const result = await Blog.findByIdAndUpdate(req.params.id, { $push: req.body }, { new: true });
+    if (result) {
+      return res.status(200).json({
+        message: "Blog Updated",
         status: "Success",
         data: result,
       });

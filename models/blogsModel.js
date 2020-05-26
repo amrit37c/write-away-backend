@@ -18,8 +18,8 @@ const blogSchema = new mongoose.Schema({
     required: [true, "Blog Image is required"],
   },
   readCount: {
-    type: Number,
-    default: 0,
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "users",
   },
   likeCount: {
     type: Number,

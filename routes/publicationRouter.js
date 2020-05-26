@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 
 const uploads = multer({ storage });
 
-router.get("/", middleware.authenticateUser, controller.getAll);
+router.get("/", middleware.authenticatedUser, controller.getAll);
 router.get("/:id", controller.getOne);
 router.post("/", uploads.fields([{ name: "mediaCover", maxCount: 1 }, { name: "categoryContent", maxCount: 1 }]), controller.save);
 router.put("/:id", uploads.fields([{ name: "mediaCover", maxCount: 1 }, { name: "categoryContent", maxCount: 1 }]), controller.update);
@@ -29,5 +29,9 @@ router.put("/user-content/:id", middleware.authenticateUser, controller.updateUs
 // bookmark publication for user
 router.post("/publication-bookmark", middleware.authenticateUser, controller.saveBookMark);
 router.put("/publication-bookmark/:id", middleware.authenticateUser, controller.updateBookMark);
+
+// like publication for user
+router.post("/publication-like", middleware.authenticateUser, controller.saveLike);
+router.put("/publication-like/:id", middleware.authenticateUser, controller.updateLike);
 
 module.exports = router;
