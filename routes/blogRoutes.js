@@ -17,6 +17,10 @@ const storage = multer.diskStorage({
 
 const uploads = multer({ storage });
 
+// My desk
+router.get("/user-blog", middleware.authenticateUser, blogController.getUserBlog);
+
+
 router.get("/", middleware.authenticatedUser, blogController.getAll);
 router.get("/:id", middleware.authenticateLoginUser, blogController.getOne);
 router.post("/", uploads.single("media"), blogController.save);
@@ -34,5 +38,6 @@ router.put("/blog-bookmark/:id", middleware.authenticatedUser, blogController.up
 // like blog for user
 router.post("/blog-like", middleware.authenticatedUser, blogController.saveLike);
 router.put("/blog-like/:id", middleware.authenticatedUser, blogController.updateLike);
+
 
 module.exports = router;

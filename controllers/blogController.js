@@ -95,6 +95,7 @@ exports.getAll = (async (req, res) => {
           preserveNullAndEmptyArrays: true,
         },
       },
+      { $sort: { createdAt: -1 } },
       {
         $unwind: {
           path: "$like",
@@ -320,17 +321,165 @@ exports.updateRead = (async (req, res) => {
   try {
     req.body.readCount = req.user;
 
-    const result = await Blog.findByIdAndUpdate(req.params.id, { $push: req.body }, { new: true });
-    if (result) {
+    const user = await Blog.find({ _id: req.params.id, readCount: { $in: [mongoose.Types.ObjectId(req.user)] } }).countDocuments();
+
+    if (!user) {
+      const result = await Blog.findByIdAndUpdate(req.params.id, { $push: req.body }, { new: true });
+
+      if (result) {
+        return res.status(200).json({
+          message: "User Read Updated",
+          status: "Success",
+          data: result,
+        });
+      }
+    } else {
       return res.status(200).json({
-        message: "Blog Updated",
+        message: "User Already Read this blg",
         status: "Success",
-        data: result,
       });
     }
   } catch (error) {
     return res.status(409).json({
       message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+
+exports.getUserBlog = (async (req, res) => {
+  try {
+    const { user } = req;
+
+    console.log(">>", req.user);
+
+    // 1. writing publication
+    // 2. Read publication
+    // 3. BookMarks
+    // 4. submissions
+    // 5. published
+    // const reads = await Blog.find({ readCount: { $in: [user] } }).populate("blogbookmarks");
+    const query = {
+      readCount: { $in: [user] },
+    };
+
+
+    const finalQuery = [];
+    // publication BookMark Lookup
+    const publicationBmLp = {
+      $lookup: {
+        from: "publicationbookmark",
+        let: { publicationId: "$_id" },
+        pipeline: [
+          {
+            $addFields:
+              {
+                publicationId: { $toObjectId: "$publicationId" },
+              },
+          },
+          {
+            $match:
+              {
+                $expr:
+                { $eq: ["$publicationId", "$$publicationId"] },
+                user: mongoose.Types.ObjectId(user),
+              },
+          },
+        ],
+        as: "bookmarkPublication",
+      },
+    };
+
+    // // publication Like lookup
+    // const publicationLp = {
+    //   $lookup: {
+    //     from: "publicationlike",
+    //     let: { publicationId: "$_id" },
+    //     pipeline: [
+    //       {
+    //         $addFields:
+    //           {
+    //             publicationId: { $toObjectId: "$publicationId" },
+    //           },
+    //       },
+    //       {
+    //         $match:
+    //           {
+    //             $expr:
+    //             { $eq: ["$publicationId", "$$publicationId"] },
+    //             user: mongoose.Types.ObjectId(req.user),
+    //           },
+    //       },
+    //     ],
+    //     as: "publicationLike",
+    //   },
+    // };
+
+    // // User Publication Lookup
+    // const userPublicationLp = {
+    //   $lookup: {
+    //     from: "userpublication",
+    //     let: { publicationId: "$_id" },
+    //     pipeline: [
+    //       {
+    //         $addFields:
+    //           {
+    //             blogId: { $toObjectId: "$blogId" },
+    //           },
+    //       },
+    //       {
+    //         $match:
+    //           {
+    //             $expr:
+    //             { $eq: ["$publicationId", "$$publicationId"] },
+    //             user: mongoose.Types.ObjectId(req.user),
+    //           },
+    //       },
+    //     ],
+    //     as: "writing",
+    //   },
+    // };
+
+    // let publicationBmLp = {
+    //   $unwind: {
+    //     path: "$bookmark",
+    //     preserveNullAndEmptyArrays: true,
+    //   },
+    // };
+
+
+    finalQuery.push(
+
+
+      { $sort: { createdAt: -1 } },
+      {
+        $unwind: {
+          path: "$like",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $or: [{ readCount: { $in: [mongoose.Types.ObjectId(user)] } }],
+        },
+      },
+    );
+
+
+    // const result = await Blog.find(query).populate({ path: "blogbookmarks" }).sort(sort);
+    const reads = await Blog.aggregate(finalQuery);
+
+    if (reads) {
+      return res.status(200).json({
+        message: "Data Found",
+        status: "Success",
+        reads,
+      });
+    }
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
       status: "Failure",
     });
   }

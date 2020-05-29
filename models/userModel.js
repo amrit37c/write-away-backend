@@ -79,69 +79,74 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: [true, "Please provide the dob"],
     },
-    gender:{
+    gender: {
       type: String,
       trim: true,
-      enum: ["male", "female"]
+      enum: ["male", "female"],
     },
-    mobile:{
-      type: String,
-      trim: true,
-      required: [false],
-    },
-    landline:{
+    mobile: {
       type: String,
       trim: true,
       required: [false],
     },
-    school:{
+    landline: {
       type: String,
       trim: true,
       required: [false],
     },
-    class:{
+    school: {
       type: String,
       trim: true,
       required: [false],
     },
-    section:{
+    class: {
       type: String,
       trim: true,
       required: [false],
     },
-    address:{
+    section: {
       type: String,
       trim: true,
       required: [false],
     },
-    country:{
+    address: {
       type: String,
       trim: true,
       required: [false],
     },
-    state:{
+    country: {
       type: String,
       trim: true,
       required: [false],
     },
-    city:{
+    state: {
       type: String,
       trim: true,
       required: [false],
     },
-    zipCode:{
+    city: {
       type: String,
       trim: true,
       required: [false],
     },
-     isActive: {
+    zipCode: {
+      type: String,
+      trim: true,
+      required: [false],
+    },
+    isActive: {
       type: Boolean,
       default: true,
     },
-    
+
     isDeleted: {
       type: Boolean,
       default: false,
+    },
+    otp: {
+      type: String,
+      trim: true,
+      required: [false],
     },
   },
   {

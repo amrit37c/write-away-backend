@@ -142,9 +142,10 @@ exports.getAll = (async (req, res) => {
           preserveNullAndEmptyArrays: true,
         },
       },
+      { $sort: { createdAt: -1 } },
       {
         $project: {
-          title: 1, mediaCover: 1, brief: 1, gender: 1, genreDescription: 1, closingDate: 1, ageGroup: 1, kickstarter: 1, kickbookDesc: 1, isActive: 1, isPublished: 1, publicationStatus: 1, publicationRights: 1, wordCount: 1, commercials: 1, language: 1, category: 1, categoryContent: 1, followers: 1, genres: "$genres", userPublication: "$userPublication", bookmark: "$bookmark",
+          title: 1, mediaCover: 1, brief: 1, gender: 1, genreDescription: 1, closingDate: 1, ageGroup: 1, kickstarter: 1, kickbookDesc: 1, isActive: 1, isPublished: 1, publicationStatus: 1, publicationRights: 1, wordCount: 1, commercials: 1, language: 1, category: 1, categoryContent: 1, followers: 1, createdAt: 1, genres: "$genres", userPublication: "$userPublication", bookmark: "$bookmark",
         },
       },
       {

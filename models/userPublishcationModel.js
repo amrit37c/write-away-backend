@@ -43,7 +43,7 @@ const schema = new mongoose.Schema({
   },
   publicationType: {
     type: String,
-    enum: ["bookmark", "writing"],
+    enum: ["writing"],
   },
 }, {
   timestamps: true,

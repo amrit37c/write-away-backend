@@ -8,6 +8,8 @@ const jwtKey = "my_secret_key";
 const jwtExpirySeconds = "30d";
 
 const salt = bcrypt.genSaltSync(10);
+const nodemailer = require("nodemailer");
+
 
 exports.saveUser = (async (req, res) => {
   try {
@@ -87,6 +89,12 @@ exports.loginUser = (async (req, res) => {
 
 exports.update = (async (req, res) => {
   try {
+    // const { password } = req.body;
+    // if (password) {
+    //   const encodePassword = bcrypt.hashSync(password, salt);
+    //   req.body.password = encodePassword;
+    // }
+
     const result = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (result) {
       return res.status(200).json({
@@ -102,3 +110,149 @@ exports.update = (async (req, res) => {
     });
   }
 });
+
+
+exports.getOne = (async (req, res) => {
+  try {
+    const query = { _id: req.user };
+    const result = await User.find(query);
+    if (result) {
+      return res.status(200).json({
+        message: "Data Found",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: "Failure",
+    });
+  }
+});
+
+exports.sendEmail = (async (req, res) => {
+  try {
+    const { email } = req.body;
+    const query = { email };
+    const result = await User.find(query);
+    console.log("resul", result);
+
+    if (result) {
+      // send email here
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "amrit37c@gmail.com",
+          pass: "Nishansingh@12345",
+        },
+      });
+
+      // generate otp here
+      const code = getVerificationCode();
+      // save otp here
+      const saveOtp = await User.findOneAndUpdate(email, { otp: code });
+
+      const mailOptions = {
+        from: "amrit37c@gmail.com",
+        to: "kumarrohit00294@gmail.com",
+        subject: "Your verification Code",
+        text: `Your code is ${code}`,
+      // html: '<h1>Hi Smartherd</h1><p>Your Messsage</p>'
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return res.status(501).json({
+            message: error,
+            status: "Success",
+          // data: result,
+          });
+        }
+        // console.log(`Email sent: ${info.response}`);
+        return res.status(200).json({
+          message: "Email send",
+          status: "Success",
+          // data: result,
+        });
+      });
+    } else {
+      return res.status(200).json({
+        message: "Invalid Email",
+        status: "Success",
+      // data: result,
+      });
+    }
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: `Failure${err}`,
+    });
+  }
+});
+
+exports.verifyOTP = (async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const query = { email, otp };
+    const result = await User.find(query);
+    console.log("resul", result);
+
+
+    if (result.length) {
+      // update password here otp here
+      const saveOtp = await User.findOneAndUpdate(email, { otp: "" });
+      return res.status(200).json({
+        message: "OTP verified",
+        status: "Success",
+        // data: result,
+      });
+    }
+    return res.status(200).json({
+      message: "Invalid OTP",
+      status: "Failure",
+      // data: result,
+    });
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: `Failure${err}`,
+    });
+  }
+});
+
+exports.updatePassword = (async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (password) {
+      const encodePassword = bcrypt.hashSync(password, salt);
+      req.body.password = encodePassword;
+    }
+
+    const result = await User.findOneAndUpdate({ email }, req.body, { new: true });
+    if (result) {
+      return res.status(200).json({
+        message: "User Password Updated",
+        status: "Success",
+        data: result,
+      });
+    }
+    return res.status(200).json({
+      message: "User not found",
+      status: "Success",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+
+function getVerificationCode() {
+  const min = Math.ceil(0);
+  const max = Math.floor(999999);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
