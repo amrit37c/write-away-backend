@@ -38,7 +38,11 @@ exports.getAll = (async (req, res) => {
     // PREVIOUS QUERY WITH USER PUBLICATION
     // let result = await Publication.find(query).populate('ageGroup', 'ageRange').populate('genres', 'title')
     // .populate('userPublication.publicationId')
+
     const finalQuery = [];
+    if (query.isPublished) {
+      query.isPublished = (query.isPublished === "true");
+    }
 
 
     finalQuery.push(

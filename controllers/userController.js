@@ -33,7 +33,7 @@ exports.saveUser = (async (req, res) => {
     });
   } catch (err) {
     console.log("err", err.message);
-    return res.status(501).json({
+    return res.status(200).json({
       message: err.message,
       status: "Failure",
     });
@@ -44,10 +44,21 @@ exports.saveUser = (async (req, res) => {
 exports.loginUser = (async (req, res) => {
   try {
     const { email, password } = req.body;
-    // const user = new UserModel();
+    // const status = { status: 1 };
+    // const query = {
+    //   email: useremail,
+    //   status: "1",
+    // };
 
     const result = await User.find({ email });
-    if (result) {
+    if (result.length) {
+      if (result[0].status !== "1") {
+        return res.status(200).json({
+          message: "Please Contact Administrator ",
+          status: "Failure",
+
+        });
+      }
       const { password: hashDbPassword } = result[0];
 
       const check = bcrypt.compareSync(password, hashDbPassword); // true
@@ -89,12 +100,6 @@ exports.loginUser = (async (req, res) => {
 
 exports.update = (async (req, res) => {
   try {
-    // const { password } = req.body;
-    // if (password) {
-    //   const encodePassword = bcrypt.hashSync(password, salt);
-    //   req.body.password = encodePassword;
-    // }
-
     const result = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (result) {
       return res.status(200).json({
@@ -138,7 +143,7 @@ exports.sendEmail = (async (req, res) => {
     const result = await User.find(query);
     console.log("resul", result);
 
-    if (result) {
+    if (result.length) {
       // send email here
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -171,15 +176,15 @@ exports.sendEmail = (async (req, res) => {
         }
         // console.log(`Email sent: ${info.response}`);
         return res.status(200).json({
-          message: "Email send",
+          message: `We have sent a password reset link to ${req.body.email}`,
           status: "Success",
           // data: result,
         });
       });
     } else {
       return res.status(200).json({
-        message: "Invalid Email",
-        status: "Success",
+        message: "Wrong Username: Oops! This Username is not valid. Please try again!",
+        status: "Failure",
       // data: result,
       });
     }
@@ -245,6 +250,26 @@ exports.updatePassword = (async (req, res) => {
   } catch (error) {
     return res.status(409).json({
       message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+
+exports.getAll = (async (req, res) => {
+  try {
+    const { query } = req;
+    const result = await User.find(query);
+    if (result) {
+      return res.status(200).json({
+        message: "Data Found",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
       status: "Failure",
     });
   }

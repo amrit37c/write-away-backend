@@ -24,6 +24,7 @@ exports.getAll = (async (req, res) => {
   try {
     const query = req.query || { };
     const sort = { createdAt: -1 };
+    query.isDeleted = false;
 
     const result = await AgeGroup.find(query).sort(sort);
     if (result) {
@@ -107,7 +108,7 @@ exports.update = (async (req, res) => {
 });
 
 
-function getAgeRange(range){
-  const ageRangeArr = range.split(',');
+function getAgeRange(range) {
+  const ageRangeArr = range.split(",");
   return ageRangeArr;
-} 
+}

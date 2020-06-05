@@ -9,6 +9,7 @@ const genreRouter = require("./routes/genreRouter");
 const ageGroupRouter = require("./routes/ageGroupRouter");
 const publicationRouter = require("./routes/publicationRouter");
 const dashboardRouter = require("./routes/dashboardRouter");
+const adminRouter = require("./routes/adminRouter");
 
 app.get("/", (req, res) => res.send("Welcome to Write Away app"));
 
@@ -37,11 +38,11 @@ app.use("/images", express.static(`${__dirname}/media`));
 // Routers
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/blog", blogRouter);
-app.use("/api/v1/genre", genreRouter);
-app.use("/api/v1/age-group", ageGroupRouter);
+app.use("/api/v1/admin/genre", genreRouter);
+app.use("/api/v1/admin/age-group", ageGroupRouter);
 app.use("/api/v1/publication", publicationRouter);
 app.use("/api/v1/admin-dashboard", dashboardRouter);
-
+app.use("/api/v1/admin", adminRouter);
 // 404 - NOT FOUND ROUTE
 app.all("*", (req, res, next, err) => {
 // next(new AppError(`Reuested resource, ${req.originalUrl} not found!`, 404));

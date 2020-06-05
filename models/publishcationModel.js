@@ -1,3 +1,8 @@
+
+function arrayLimit(val) {
+  return val.length <= 2;
+}
+
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
@@ -99,30 +104,11 @@ const schema = new mongoose.Schema({
     type: String,
     default: "Admin",
   },
-  // readCount: {
-  //   type: [mongoose.Schema.Types.ObjectId],
-  //   ref: 'User'
-  // },
-  // likeCount: {
-  //   type: [mongoose.Schema.Types.ObjectId],
-  //   ref: 'User'
-  // },
-  // shareCount: {
-  //   type: [mongoose.Schema.Types.ObjectId],
-  //   ref: 'User'
-  // },
-  // copiesCount: {
-  //   type: [mongoose.Schema.Types.ObjectId],
-  //   ref: 'User'
-  // },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
 });
 
-function arrayLimit(val) {
-  return val.length <= 2;
-}
 
 module.exports = mongoose.model("publication", schema);

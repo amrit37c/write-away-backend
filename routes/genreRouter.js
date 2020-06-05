@@ -17,8 +17,9 @@ const uploads = multer({ storage });
 
 router.get("/", controller.getAll);
 router.get("/:id", controller.getOne);
-router.post("/", uploads.array("media", 5), controller.save);
-router.put("/:id", uploads.array("media", 5), controller.update);
-
+router.post("/", uploads.array("topicMedia", 5), controller.save);
+router.put("/:id", uploads.array("topicMedia", 5), controller.update);
+router.delete("/:id", controller.delete);
+router.put("/:id/genre-img-update", controller.updateGenreImg);
 
 module.exports = router;

@@ -6,6 +6,9 @@ const BlogLike = require("../models/blogLikeModel");
 exports.save = (async (req, res) => {
   try {
     req.body.media = `${req.file.filename}`;
+    if (req.body.activeBlog) {
+      const disableActiveBlog = await Blog.findOneAndUpdate({ activeBlog: true }, { activeBlog: false }, { new: true });
+    }
     const result = await Blog(req.body).save();
     if (result) {
       return res.status(201).json({
@@ -27,6 +30,7 @@ exports.getAll = (async (req, res) => {
     const sort = { createdAt: -1 };
     const now = new Date();
 
+    console.log("req.query", req.query);
     const finalQuery = [];
 
     if (query.isPublished === "today") {
@@ -39,11 +43,25 @@ exports.getAll = (async (req, res) => {
 
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
       query.createdAt = { $lte: today };
+    } else if (query.isPublished === "true") {
+      query.isPublished = true;
+    } else if (query.isPublished === "false") {
+      query.isPublished = false;
+    }
+    if (query.activeBlog === "true") {
+      console.log("actuve");
+      query.activeBlog = true;
     }
 
 
-    finalQuery.push(
-      {
+    query.isDeleted = false;
+
+    const aggregateSort = { $sort: { updatedAt: -1 } };
+
+    console.log(">>>>>>>>>>>>>>>>", query);
+
+    if (req.user) {
+      const bmLookUp = {
         $lookup: {
           from: "blogbookmarks",
           let: { blogId: "$_id" },
@@ -65,8 +83,8 @@ exports.getAll = (async (req, res) => {
           ],
           as: "bookmark",
         },
-      },
-      {
+      };
+      const blogLikeLookUp = {
         $lookup: {
           from: "bloglikes",
           let: { blogId: "$_id" },
@@ -88,20 +106,27 @@ exports.getAll = (async (req, res) => {
           ],
           as: "like",
         },
-      },
-      {
+      };
+
+      const bmunwind = {
         $unwind: {
           path: "$bookmark",
           preserveNullAndEmptyArrays: true,
         },
-      },
-      { $sort: { createdAt: -1 } },
-      {
+      };
+
+      const unwindLike = {
         $unwind: {
           path: "$like",
           preserveNullAndEmptyArrays: true,
         },
-      },
+      };
+      finalQuery.push(bmLookUp, blogLikeLookUp, bmunwind, aggregateSort, unwindLike);
+    }
+
+
+    finalQuery.push(
+      aggregateSort,
       {
         $match: {
           $or: [query],
@@ -109,9 +134,21 @@ exports.getAll = (async (req, res) => {
       },
     );
 
-
-    // const result = await Blog.find(query).populate({ path: "blogbookmarks" }).sort(sort);
     const result = await Blog.aggregate(finalQuery);
+    // const result = await Blog.aggregate([
+    //   { $sort: { createdAt: -1 } },
+    //   {
+    //     $match:
+    //     {
+    //       $or: [
+    //         {
+    //           isPublished: false,
+    //         },
+    //       ],
+    //     },
+    //   },
+    // ]);
+
     if (result) {
       return res.status(200).json({
         message: "Data Found",
@@ -134,22 +171,24 @@ exports.getOne = (async (req, res) => {
     };
 
     // fetch single blog
-    const result = await Blog.find(query).populate("blogbookmarks");
+    const result = await Blog.find(query);
     if (result) {
-      // fetch blog by like count
-      const likeResult = await BlogBookMark.find({
+      const likeResult = await BlogLike.find({
         blogId: _id,
+        likeStatus: "1",
       }).count();
 
       // fetch user's like post - user who like or not
-      const userLikeResult = await BlogBookMark.find({
+      const userLikeResult = await BlogLike.findOne({
         blogId: _id,
         user: req.user,
       });
 
+
       result[0].likeCount = likeResult;
       const data = result[0].toJSON();
-      data.userDetail = userLikeResult;
+      data.like = userLikeResult;
+      // data.like = likeResult;
 
       return res.status(200).json({
         message: "Data Found",
@@ -217,7 +256,13 @@ exports.delete = (async (req, res) => {
 
 exports.update = (async (req, res) => {
   try {
-    // const query = { _id: mongoose.Types.ObjectId(req.params.id) };
+    if (req.file) {
+      req.body.media = `${req.file.filename}`;
+    }
+    if (req.body.activeBlog) {
+      const disableActiveBlog = await Blog.findOneAndUpdate({ activeBlog: true }, { activeBlog: false }, { new: true });
+    }
+
     const result = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (result) {
       return res.status(200).json({
@@ -239,7 +284,7 @@ exports.saveBookMark = (async (req, res) => {
   try {
     req.body.user = req.user;
 
-    console.log(">>", req.body);
+
     const result = await BlogBookMark(req.body).save();
     if (result) {
       return res.status(201).json({
@@ -280,7 +325,7 @@ exports.saveLike = (async (req, res) => {
   try {
     req.body.user = req.user;
 
-    console.log(">>", req.body);
+
     const result = await BlogLike(req.body).save();
     if (result) {
       return res.status(201).json({
@@ -347,12 +392,43 @@ exports.updateRead = (async (req, res) => {
   }
 });
 
+// Update Read
+exports.updateShare = (async (req, res) => {
+  try {
+    req.body.shareCount = req.user;
+
+
+    const user = await Blog.find({ _id: req.params.id, shareCount: { $in: [mongoose.Types.ObjectId(req.user)] } }).countDocuments();
+
+    if (!user) {
+      const result = await Blog.findByIdAndUpdate(req.params.id, { $push: req.body }, { new: true });
+
+      if (result) {
+        return res.status(200).json({
+          message: "User Share Updated",
+          status: "Success",
+          data: result,
+        });
+      }
+    } else {
+      return res.status(200).json({
+        message: "User Already Share this blg",
+        status: "Success",
+      });
+    }
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
 
 exports.getUserBlog = (async (req, res) => {
   try {
     const { user } = req;
 
-    console.log(">>", req.user);
 
     // 1. writing publication
     // 2. Read publication
@@ -480,6 +556,156 @@ exports.getUserBlog = (async (req, res) => {
   } catch (err) {
     return res.status(404).json({
       message: "No Data Found",
+      status: "Failure",
+    });
+  }
+});
+
+
+exports.getAllBlogStatAdmin = (async (req, res) => {
+  try {
+    const query = req.query || { };
+    const sort = { createdAt: -1 };
+    const now = new Date();
+
+    console.log("req.query", req.query);
+    const finalQuery = [];
+
+    if (query.isPublished === "today") {
+      query.isPublished = true;
+
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      query.createdAt = { $gte: today };
+    } else if (query.isPublished === "yesterday") {
+      query.isPublished = true;
+
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      query.createdAt = { $lte: today };
+    } else if (query.isPublished === "true") {
+      query.isPublished = true;
+    } else if (query.isPublished === "false") {
+      query.isPublished = false;
+    }
+    if (query.activeBlog === "true") {
+      query.activeBlog = true;
+    }
+
+
+    query.isDeleted = false;
+
+    const aggregateSort = { $sort: { updatedAt: -1 } };
+    console.log("actuve", query);
+
+
+    const bmLookUp = {
+      $lookup: {
+        from: "blogbookmarks",
+        let: { blogId: "$_id" },
+        pipeline: [
+          {
+            $addFields:
+                {
+                  blogId: { $toObjectId: "$blogId" },
+                },
+          },
+          {
+            $match:
+                {
+                  $expr:
+                  { $eq: ["$blogId", "$$blogId"] },
+                  bookMarkStatus: "1",
+                },
+          },
+        ],
+        as: "bookmark",
+      },
+    };
+    const blogLikeLookUp = {
+      $lookup: {
+        from: "bloglikes",
+        let: { blogId: "$_id" },
+        pipeline: [
+          {
+            $addFields:
+                {
+                  blogId: { $toObjectId: "$blogId" },
+                },
+          },
+          {
+            $match:
+                {
+                  $expr:
+                  { $eq: ["$blogId", "$$blogId"] },
+                  likeStatus: "1",
+                },
+          },
+        ],
+        as: "like",
+      },
+    };
+
+    const bmunwind = {
+      $unwind: {
+        path: "$bookmark",
+        preserveNullAndEmptyArrays: false,
+      },
+    };
+
+    const unwindLike = {
+      $unwind: {
+        path: "$like",
+        preserveNullAndEmptyArrays: false,
+      },
+    };
+
+    const project = {
+      $project: {
+        readCount: 1, likeCount: 1, shareCount: 1, copiesCount: 1, isPublished: 1, isActive: 1, isDeleted: 1, title: 1, content: 1, media: 1, createdAt: 1, updatedAt: 1, like: "$like", bookmark: "$bookmark",
+      },
+    };
+    const group = {
+      $group: {
+        _id: "$_id",
+        readCount: { $first: "$readCount" },
+        likeCount: { $first: "$likeCount" },
+        shareCount: { $first: "$shareCount" },
+        copiesCount: { $first: "$copiesCount" },
+        isPublished: { $first: "$isPublished" },
+        isActive: { $first: "$isActive" },
+        isDeleted: { $first: "$isDeleted" },
+        title: { $first: "$title" },
+        content: { $first: "$content" },
+        media: { $first: "$media" },
+        createdAt: { $first: "$createdAt" },
+        like: { $push: "$like" },
+        bookmark: { $push: "$bookmark" },
+      },
+    };
+
+
+    finalQuery.push(
+      bmLookUp, blogLikeLookUp, bmunwind, aggregateSort, unwindLike,
+      {
+        $match: {
+          $or: [query],
+        },
+      },
+      project,
+      group,
+    );
+
+    const result = await Blog.aggregate(finalQuery);
+
+    if (result) {
+      return res.status(200).json({
+        message: "Data Found",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (err) {
+    return res.status(409).json({
+      message: err.message,
       status: "Failure",
     });
   }

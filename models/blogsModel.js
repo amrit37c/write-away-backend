@@ -26,8 +26,8 @@ const blogSchema = new mongoose.Schema({
     default: 0,
   },
   shareCount: {
-    type: Number,
-    default: 0,
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "users",
   },
   copiesCount: {
     type: Number,
@@ -40,6 +40,10 @@ const blogSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true,
+  },
+  activeBlog: {
+    type: Boolean,
+    default: false,
   },
   isDeleted: {
     type: Boolean,

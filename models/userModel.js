@@ -84,6 +84,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       enum: ["male", "female"],
     },
+    status: {
+      type: String,
+      enum: [0, 1, 2], // 0 - block, 1- active, 2-delete
+      default: 1,
+    },
     mobile: {
       type: String,
       trim: true,
@@ -147,6 +152,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: [false],
+    },
+    acceptOffer: {
+      type: String,
+      default: true,
+    },
+    verified: {
+      type: String,
+      default: false,
     },
   },
   {
