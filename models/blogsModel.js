@@ -17,6 +17,19 @@ const blogSchema = new mongoose.Schema({
     trim: true,
     required: [true, "Blog Image is required"],
   },
+  media520: {
+    type: String,
+    trim: true,
+    // required: [true, "Blog Image is required"],
+  },
+  media690: {
+    type: String,
+    trim: true,
+  },
+  media138: {
+    type: String,
+    trim: true,
+  },
   readCount: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "users",

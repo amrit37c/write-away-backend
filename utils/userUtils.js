@@ -35,12 +35,7 @@ exports.authenticateUser = (req, res, next) => {
 exports.authenticatedUser = (req, res, next) => {
   try {
     const bearerToken = req.header("authorization");
-    // if(!bearerToken){
-    //     return res.status(401).json({
-    //         status: 'failure',
-    //         message: 'Unauthenticated user'
-    //     })
-    // }
+
     if (bearerToken) {
       const token = getToken(bearerToken);
 
@@ -49,16 +44,6 @@ exports.authenticatedUser = (req, res, next) => {
     }
 
     next();
-
-    // if (Date.now() >= exp * 1000) {
-    //     return res.status(401).json({
-    //         status: 'failure',
-    //         message: 'Unauthenticated user'
-    //     })
-    // } else{
-    //     req.user = id;
-    //     next();
-    // }
   } catch (err) {
     return res.status(401).json({
       status: "failure",

@@ -5,6 +5,8 @@ const jwtKey = "my_secret_key";
 const jwtExpirySeconds = 3000;
 const salt = bcrypt.genSaltSync(10);
 const multer = require("multer");
+const nodemailer = require("nodemailer");
+const User = require("../models/userModel");
 
 function getToken(token) {
   const spToken = token.split(" ");
@@ -124,3 +126,62 @@ exports.logout = (req, res) => {
     });
   }
 };
+
+
+exports.sendEmailUser = (async (req, res) => {
+  try {
+    const { email } = req.body;
+    const query = { email };
+    const result = await User.find(query);
+
+    if (result.length) {
+      // send email here
+
+    } else {
+      return res.status(200).json({
+        message: "Wrong Username: Oops! This Username is not valid. Please try again!",
+        status: "Failure",
+      // data: result,
+      });
+    }
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: `Failure${err}`,
+    });
+  }
+});
+
+
+function getVerificationCode() {
+  const min = Math.ceil(0);
+  const max = Math.floor(999999);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+exports.sendEmail = (async (data) => {
+  const { email, subject, text } = data;
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "amrit37c@gmail.com",
+      pass: "Nishansingh@12345",
+    },
+  });
+
+
+  const mailOptions = {
+    from: "amrit37c@gmail.com",
+    to: "kumarrohit00294@gmail.com",
+    subject,
+    html: text,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return error;
+    }
+    return info;
+  });
+});

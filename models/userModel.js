@@ -77,7 +77,7 @@ const userSchema = new mongoose.Schema(
     dob: {
       type: String,
       trim: true,
-      required: [true, "Please provide the dob"],
+      // required: [true, "Please provide the dob"],
     },
     gender: {
       type: String,
