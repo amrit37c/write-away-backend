@@ -26,11 +26,11 @@ const schema = new mongoose.Schema({
     enum: ["male", "female"],
   },
   genres: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     ref: "genre",
   },
   genreDescription: {
-    type: String,
+    type: [String],
     trim: true,
     required: [true, "Description is required"],
   },
@@ -38,7 +38,7 @@ const schema = new mongoose.Schema({
     type: Date,
   },
   ageGroup: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     ref: "agegroup",
   },
   kickstarter: {
@@ -74,10 +74,6 @@ const schema = new mongoose.Schema({
     enum: [1, 2, 3], // 1 - open for all, 2 - open for self, 3 - open for invitees only
   },
   wordCount: {
-    // type: String,
-    // trim: true,
-    // required:[false],
-    // length: { min: 0, max: 32 }
     type: Array,
     trim: true,
     validate: [arrayLimit],

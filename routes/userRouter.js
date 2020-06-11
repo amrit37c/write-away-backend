@@ -12,10 +12,12 @@ router.get("/", middleware.authenticateUser, userController.getOne);
 router.post("/", userController.update);
 
 router.put("/update-password", userController.updatePassword);
-router.put("/:id", userController.update);
+router.put("/:id", middleware.authenticatedUser, userController.update);
 router.post("/logout", middleware.logout);
 router.post("/send-forget-email", userController.sendEmail);
+router.post("/resend-otp", userController.resendOTP);
 router.post("/verify-otp", userController.verifyOTP);
+router.post("/verify-signup-otp", userController.verifySignUpOTP);
 router.get("/verify-user/:id", userController.verifyUser);
 
 module.exports = router;

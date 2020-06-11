@@ -119,6 +119,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: [false],
     },
+    address2: {
+      type: String,
+      trim: true,
+      required: [false],
+    },
     country: {
       type: String,
       trim: true,

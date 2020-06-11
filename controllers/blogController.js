@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const Blog = require("../models/blogsModel");
+const User = require("../models/userModel");
 const BlogBookMark = require("../models/blogBookMarkModel");
 const BlogLike = require("../models/blogLikeModel");
+const BlogShre = require("../models/socialShareBlogModel");
 
 exports.save = (async (req, res) => {
   try {
@@ -417,16 +419,15 @@ exports.updateRead = (async (req, res) => {
   }
 });
 
-// Update Read
+// Update Share
 exports.updateShare = (async (req, res) => {
   try {
-    req.body.shareCount = req.user;
+    console.log("user", req.user);
+    req.body.user = req.user;
+    req.body.blogId = req.params.id;
 
 
-    // const user = await Blog.find({ _id: req.params.id, shareCount: { $in: [mongoose.Types.ObjectId(req.user)] } }).countDocuments();
-
-    // if (!user) {
-    const result = await Blog.findByIdAndUpdate(req.params.id, { $push: req.body }, { new: true });
+    const result = await BlogShre(req.body).save();
 
     if (result) {
       return res.status(200).json({
@@ -435,12 +436,6 @@ exports.updateShare = (async (req, res) => {
         data: result,
       });
     }
-    // } else {
-    //   return res.status(200).json({
-    //     message: "User Already Share this blg",
-    //     status: "Success",
-    //   });
-    // }
   } catch (error) {
     return res.status(409).json({
       message: error.message,
@@ -595,32 +590,86 @@ exports.getAllBlogStatAdmin = (async (req, res) => {
     const query = { activeBlog: true };
     // fetch single blog
 
-    const result = await Blog.find(query).sort(sort);
+    const result = await Blog.find(query).populate({ path: "readCount", select: { _id: 1, email: 1 }, model: User }).sort(sort);
 
 
     if (result.length) {
       const likeResult = await BlogLike.find({
         blogId: result[0].id,
         likeStatus: "1",
-      }).countDocuments();
+      }).populate({ path: "user", select: { _id: 1, email: 1 }, model: User });
 
       const bmResult = await BlogBookMark.find({
         blogId: result[0].id,
         bookMarkStatus: "1",
-      }).countDocuments();
+      }).populate({
+        path: "user",
+        select: { _id: 1, email: 1 },
+        model: User,
+      });
+
+      const shareCount = await BlogShre.find({ blogId: result[0].id, platform: { $ne: "site" } }).populate({ path: "user", select: { _id: 1, email: 1 }, model: User });
+      const copiesCount = await BlogShre.find({ blogId: result[0].id, platform: "site" }).populate({ path: "user", select: { _id: 1, email: 1 }, model: User });
 
 
       const data = result[0].toJSON();
+      data.shareCount = shareCount;
+      data.copiesCount = copiesCount;
       const blogData = await Blog.find({ isPublished: true, activeBlog: false, isDeleted: false }).sort({ updatedAt: -1 });
 
       data.likeCount = likeResult;
       data.bookmarkCount = bmResult;
+
+      const allBlog = await Blog.find({ isPublished: true }).countDocuments();
+      const totalReads = await Blog.aggregate([
+        { $unwind: "$readCount" },
+        { $group: { _id: "$_id", sum: { $sum: 1 } } },
+        { $group: { _id: null, sum: { $sum: "$sum" } } },
+      ]);
+
+
+      const totalLikes = await BlogLike.aggregate([
+        { $match: { likeStatus: "1" } },
+        { $group: { _id: "$_id", sum: { $sum: 1 } } },
+        { $group: { _id: null, sum: { $sum: "$sum" } } },
+      ]);
+
+      const BlogShare = await BlogShre.aggregate([
+        { $match: { platform: "site" } },
+        { $group: { _id: "$_id", sum: { $sum: 1 } } },
+        { $group: { _id: null, sum: { $sum: "$sum" } } },
+      ]);
+
+      const BlogShareLink = await BlogShre.aggregate([
+        { $match: { platform: { $ne: "site" } } },
+        { $group: { _id: "$_id", sum: { $sum: 1 } } },
+        { $group: { _id: null, sum: { $sum: "$sum" } } },
+      ]);
+
+      console.log(">>>>>>>>>>>>", BlogShare);
+
+
+      const avrReads = totalReads.length ? (totalReads[0].sum / allBlog).toFixed(2) : 0;
+      const avrLikes = totalLikes.length ? (totalLikes[0].sum / allBlog).toFixed(2) : 0;
+      const avrShare = BlogShare.length ? (BlogShare[0].sum / allBlog).toFixed(2) : 0;
+      const avgCopiesLink = BlogShareLink.length ? (BlogShareLink[0].sum / allBlog).toFixed(2) : 0;
+      // if(totalReads.length){
+      //   avrReads = (totalReads[0].sum / allBlog).toFixed(2);
+      // }
+
+      // const avrLikes = (totalLikes[0].sum / allBlog).toFixed(2);
+
 
       return res.status(200).json({
         message: "Data Found",
         status: "Success",
         data,
         blogData,
+        allBlog,
+        avrReads,
+        avrLikes,
+        avrShare,
+        avgCopiesLink,
       });
     }
     return res.status(200).json({
@@ -630,7 +679,7 @@ exports.getAllBlogStatAdmin = (async (req, res) => {
   } catch (err) {
     return res.status(404).json({
       message: "No Data Found",
-      status: "Failure",
+      status: `Failure${err}`,
     });
   }
 });
@@ -693,6 +742,16 @@ exports.getFilterBlog = (async (req, res) => {
 
                 },
           },
+          // {
+          //   $lookup: {
+          //     from: "users",
+          //     let: { user: "$user" },
+          //     pipeline: [
+          //       { $match: { $expr: ["$users", "$$user"] } },
+          //     ],
+          //     as: "user",
+          //   },
+          // },
         ],
         as: "bookmark",
       },
@@ -721,6 +780,55 @@ exports.getFilterBlog = (async (req, res) => {
       },
     };
 
+    const blogShareLookUp = {
+      $lookup: {
+        from: "socialshareblogs",
+        let: { blogId: "$_id" },
+        pipeline: [
+          {
+            $addFields:
+                {
+                  blogId: { $toObjectId: "$blogId" },
+                },
+          },
+          {
+            $match:
+                {
+                  $expr:
+                  { $eq: ["$blogId", "$$blogId"] },
+                  platform: { $ne: "site" },
+
+                },
+          },
+        ],
+        as: "shareCount",
+      },
+    };
+    const blogLinkCopyLookUp = {
+      $lookup: {
+        from: "socialshareblogs",
+        let: { blogId: "$_id" },
+        pipeline: [
+          {
+            $addFields:
+                {
+                  blogId: { $toObjectId: "$blogId" },
+                },
+          },
+          {
+            $match:
+                {
+                  $expr:
+                  { $eq: ["$blogId", "$$blogId"] },
+                  platform: "site",
+
+                },
+          },
+        ],
+        as: "copiesCount",
+      },
+    };
+
     const bmunwind = {
       $unwind: {
         path: "$bookmark",
@@ -734,10 +842,31 @@ exports.getFilterBlog = (async (req, res) => {
         preserveNullAndEmptyArrays: true,
       },
     };
+    const unwindShare = {
+      $unwind: {
+        path: "$like",
+        preserveNullAndEmptyArrays: true,
+      },
+    };
+
 
     const project = {
       $project: {
-        readCount: 1, likeCount: 1, shareCount: 1, copiesCount: 1, isPublished: 1, isActive: 1, isDeleted: 1, title: 1, content: 1, media: 1, createdAt: 1, updatedAt: 1, like: "$like", bookmark: "$bookmark",
+        readCount: 1,
+        likeCount: 1,
+        shareCount: "$shareCount",
+        // copiesCount: 1,
+        isPublished: 1,
+        isActive: 1,
+        isDeleted: 1,
+        title: 1,
+        content: 1,
+        media: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        like: "$like",
+        bookmark: "$bookmark",
+        copiesCount: "$copiesCount",
       },
     };
     const group = {
@@ -745,8 +874,8 @@ exports.getFilterBlog = (async (req, res) => {
         _id: "$_id",
         readCount: { $first: "$readCount" },
         likeCount: { $first: "$likeCount" },
-        shareCount: { $first: "$shareCount" },
-        copiesCount: { $first: "$copiesCount" },
+
+        // copiesCount: { $first: "$copiesCount" },
         isPublished: { $first: "$isPublished" },
         isActive: { $first: "$isActive" },
         isDeleted: { $first: "$isDeleted" },
@@ -756,12 +885,14 @@ exports.getFilterBlog = (async (req, res) => {
         createdAt: { $first: "$createdAt" },
         like: { $push: "$like" },
         bookmark: { $push: "$bookmark" },
+        shareCount: { $first: "$shareCount" },
+        copiesCount: { $first: "$copiesCount" },
       },
     };
 
 
     finalQuery.push(
-      bmLookUp, blogLikeLookUp, bmunwind, aggregateSort, unwindLike,
+      bmLookUp, blogLikeLookUp, blogShareLookUp, blogLinkCopyLookUp, unwindShare, bmunwind, aggregateSort, unwindLike,
       {
         $match: {
           $or: [query],

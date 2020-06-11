@@ -6,6 +6,7 @@ const ipLocation = require("ip-location"); // get location from ip
 const userController = require("../controllers/userController");
 const blogController = require("../controllers/blogController");
 const adminController = require("../controllers/adminController");
+const publicationController = require("../controllers/publicationController");
 
 const middleware = require("../utils/userUtils");
 
@@ -18,7 +19,6 @@ const storage = multer.diskStorage({
   filename(req, file, cb) {
     const ext = file.originalname.split(".").pop();
     const img = `${file.fieldname}-${Date.now()}.${ext}`;
-    // const img = "Rohit.jpg";
     cb(null, img);
   },
 });
@@ -26,10 +26,8 @@ const storage = multer.diskStorage({
 const uploads = multer({ storage });
 
 const thumbnail = (async (req, res, next) => {
-  console.log("calld");
   // Create thumnail of an image;
   if (req.file) {
-    console.log("FILE");
     const ext = req.file.filename.split(".").pop();
     const img = req.file.filename.split(".");
 
@@ -38,7 +36,7 @@ const thumbnail = (async (req, res, next) => {
       const file = [];
       // generate thumnail for home page
       thumb
-        .resize(520, 481) // resize
+        .resize(593, 492) // resize
         .quality(60) // set JPEG quality
         .write(`media/${img[0]}-520*481.${ext}`); // save
 
@@ -48,14 +46,14 @@ const thumbnail = (async (req, res, next) => {
       // generate thumnail for blog page
 
       thumb
-        .resize(690, 572) // resize
+        .resize(873, 602) // resize
         .quality(60) // set JPEG quality
         .write(`media/${img[0]}-690*572.${ext}`); // save
 
       file.push(`${img[0]}-690*572.${ext}`);
 
       thumb
-        .resize(138, 170) // resize
+        .resize(180, 222) // resize
         .quality(60) // set JPEG quality
         .write(`media/${img[0]}-138*170.${ext}`); // save
 
@@ -94,11 +92,26 @@ router.post("/test", uploads.single("media"), thumbnail, (async (req, res) => {
   // const location = await ipLocation("172.217.167.78");
   res.send(req.file);
 }));
-// router.post("/", userController.update);
 
-// router.put("/update-password", userController.updatePassword);
-// router.put("/:id", userController.update);
-// router.post("/logout", middleware.logout);
-// router.post("/send-forget-email", userController.sendEmail);
-// router.post("/verify-otp", userController.verifyOTP);
+
+// publications
+router.get("/publication/publication-home", publicationController.getAllPublicationStatAdmin);
+router.get("/publication/", middleware.authenticatedUser, publicationController.getAllPublictionAd);
+router.get("/publication/:id", publicationController.getOne);
+router.post("/publication/", uploads.fields([{ name: "mediaCover", maxCount: 1 }, { name: "categoryContent", maxCount: 1 }]), publicationController.save);
+router.put("/publication/:id", uploads.fields([{ name: "mediaCover", maxCount: 1 }, { name: "categoryContent", maxCount: 1 }]), publicationController.update);
+router.put("/publication-update/:id", publicationController.update);
+
+// save user content for publication
+router.post("/publication/user-content", middleware.authenticateUser, publicationController.saveUserPublication);
+router.put("/publication/user-content/:id", middleware.authenticateUser, publicationController.updateUserPublication);
+
+// bookmark publication for user
+router.post("/publication/publication-bookmark", middleware.authenticateUser, publicationController.saveBookMark);
+router.put("/publication/publication-bookmark/:id", middleware.authenticateUser, publicationController.updateBookMark);
+
+// like publication for user
+router.post("/publication/publication-like", middleware.authenticateUser, publicationController.saveLike);
+router.put("/publication/publication-like/:id", middleware.authenticateUser, publicationController.updateLike);
+
 module.exports = router;

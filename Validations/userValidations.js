@@ -25,34 +25,31 @@ exports.validate = (async (req, res, next) => {
         "string.min": "Lastname should have a minimum length of {#limit}",
         "any.required": "Lastname is a required field",
       }),
-    guardian: Joi.string().allow("").optional(),
+    guardian: Joi.string().allow(null).allow("").optional(),
 
-    //   .alphanum(),
     guardianFirstName: Joi.string()
-      .alphanum().allow("").when("guardian", { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
+      .alphanum().allow(null).allow("")
+      .when("guardian", { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
 
     guardianLastName: Joi.string()
-      .alphanum().allow("").when("guardian", { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
-    guardianPassword: Joi.string()
-      .alphanum().allow("").when("guardian", { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
-    guardianConfirmPassword: Joi.string().allow(""),
+      .alphanum().allow(null).allow("")
+      .when("guardian", { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
+
 
     confirmPassword: Joi.string().allow(""),
     password: Joi.string().allow(""),
-    adultUser: Joi.boolean().allow(""),
+    adultUser: Joi.boolean().allow(null).allow(""),
     acceptOffer: Joi.string().allow(""),
     acceptTerms: Joi.boolean().allow(""),
-    //   .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
+
     dob: Joi.string(),
-    //   .integer()
-    //   .min(1900)
-    //   .max(new Date().getFullYear()),
-    // dob: Joi.date(),
+
 
     email: Joi.string()
       .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
-    guardianEmail: Joi.string().allow("")
-      .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }).when("guardian", { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
+    guardianEmail: Joi.string().allow(null).allow("")
+      .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+      .when("guardian", { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
 
   });
 

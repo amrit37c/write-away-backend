@@ -162,6 +162,7 @@ function getVerificationCode() {
 
 exports.sendEmail = (async (data) => {
   const { email, subject, text } = data;
+  console.log("EMAIL FOUND", email);
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -173,7 +174,7 @@ exports.sendEmail = (async (data) => {
 
   const mailOptions = {
     from: "amrit37c@gmail.com",
-    to: "kumarrohit00294@gmail.com",
+    to: email || "amrit37c@gmail.com",
     subject,
     html: text,
   };

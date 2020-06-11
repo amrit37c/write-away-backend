@@ -30,7 +30,9 @@ router.put("/:id", uploads.single("media"), blogController.update);
 
 // update user for read count
 router.put("/blog-read/:id", middleware.authenticatedUser, blogController.updateRead);
-router.put("/blog-share/:id", middleware.authenticatedUser, blogController.updateShare);
+
+// social share
+router.post("/blog-share/:id", middleware.authenticatedUser, blogController.updateShare);
 
 // bookmark blog for user
 router.post("/blog-bookmark", middleware.authenticatedUser, blogController.saveBookMark);

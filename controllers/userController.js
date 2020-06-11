@@ -35,88 +35,42 @@ function generateRandom() {
 exports.saveUser = (async (req, res) => {
   try {
     // encrypt password
-    const { password } = req.body;
+    const { email, password } = req.body;
     const encodePassword = bcrypt.hashSync(password, salt);
     req.body.password = encodePassword;
+    const code = getVerificationCode();
+    req.body.otp = code;
+
+    // check if user exist
+    const emailExist = await User.find({ email, verified: "false" });
+    if (emailExist.length) {
+      return res.status(200).send({ succes: "Failure", message: "User already exist!" });
+    }
 
     const result = await User(req.body).save(); // save result
 
     if (result) {
-      // Generate hash for verify link
-      let verifyCode = bcrypt.hashSync(generateRandom(hashNumbers), salt);
-      verifyCode = verifyCode.replace(/\\/g, "");
-      const verifyData = {
-        user: result.id,
-        verifyCode,
-      };
+      const data = req.body;
 
-      const saveVerification = await VerifyUser(verifyData).save(); // save verify code
-      const link = `<a href=${process.env.URL}/api/v1/user/verify-user/${verifyCode}>VERIFY</a>`;
       // Email Content
-      const content = {
-        email: req.body.email,
+      const contentGu = {
+        email: req.body.guardianEmail ? data.guardianEmail : data.email,
         subject: "Welcome to Write Awayy",
-        text: `Please Click the link  ${link}`,
+        text: `Welcome to Write Awayy! Now you can read, write and share stories online in a creative format! To activate your account and gain full access to all Write Awayy functions click here. Please Enter This OTP  ${code}`,
       };
 
-      // send email here
-      const userEmail = utils.sendEmail(content);
-
-
-      if (userEmail) {
-        console.log("USER EMAIL SEND");
+      const sendEmail = utils.sendEmail(contentGu);
+      if (sendEmail) {
+        console.log("EMAIL SEND DONE");
       }
 
-      if (req.body.guardian) {
-        // check if guardian exist
-        const guEmail = req.body.guardianEmail;
-        const data = req.body;
-        const checkGuardian = await User.find({ email: guEmail });
-        if (!checkGuardian.length) {
-          console.log("guradian not exist");
-          // check if not exist save guardian
-
-          const obj = {
-            firstName: data.guardianFirstName,
-            lastName: data.guardianLastName,
-            email: data.guardianEmail,
-            password: bcrypt.hashSync(data.guardianPassword, salt),
-          };
-          const saveGuard = await User(obj).save();
-
-          // Generate hash for verify guardian link
-          let verifyGuCode = bcrypt.hashSync(generateRandom(hashNumbers), salt);
-          verifyGuCode = verifyGuCode.replace(/\\/g, "");
-          const verifyGuData = {
-            user: saveGuard.id,
-            verifyCode: verifyGuCode,
-          };
-
-          const saveGuVerification = await VerifyUser(verifyGuData).save(); // save verify code
-          const linkGu = `<a href=${process.env.URL}/api/v1/user/verify-user/${verifyGuCode}>VERIFY</a>`;
-          // Email Content
-          const contentGu = {
-            email: data.guardianEmail,
-            subject: "Welcome to Write Awayy",
-            text: `Please Click the link  ${linkGu}`,
-          };
-
-          // send email here
-          // const content = {
-          //   email: data.guardianEmail,
-          //   subject: "Welcome to Write Awayy",
-          //   text: "Please Click the link",
-          // };
-          const guardianEmail = utils.sendEmail(contentGu);
-          if (userEmail) {
-            console.log("Guardian EMAIL SEND");
-          }
-        }
-      }
-
+      const parent = req.body.guardianEmail ? " parent " : "";
+      const message = `Thank you for registering with us! A message with
+       a confirmation link has been sent to your ${parent} 
+       email address. Please follow the link to activate your account.`;
 
       return res.status(201).json({
-        message: "User Created",
+        message,
         status: "Success",
       });
     }
@@ -153,18 +107,20 @@ exports.loginUser = (async (req, res) => {
 
       const check = bcrypt.compareSync(password, hashDbPassword); // true
       if (check) {
-        let { id, firstName } = result[0];
+        let { id, firstName, lastName } = result[0];
         // let firstName;
 
         if (result[0].verified === "false") {
-          return res.status(401).json({
+          return res.status(200).json({
             message: "Please verify account first",
             status: "Failure",
           });
         }
+        firstName = `${firstName} ${lastName}`;
         if (result[0].selectDisplayName === true) {
           firstName = result[0].displayName;
         }
+
 
         const token = jwt.sign({ id, firstName }, jwtKey, {
           algorithm: "HS256",
@@ -201,8 +157,26 @@ exports.loginUser = (async (req, res) => {
 
 exports.update = (async (req, res) => {
   try {
-    const result = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { id } = req.params;
+    console.log("body", req.body);
+
+    const result = await User.findByIdAndUpdate(id, req.body, { new: true, password: 0 });
+
     if (result) {
+      // const updateResult = {};
+      // updateResult.result = result;
+
+      // if (req.body.selectDisplayName === "true") {
+      //   console.log("token change");
+      //   const firstName = result.displayName;
+      //   const token = jwt.sign({ id, firstName }, jwtKey, {
+      //     algorithm: "HS256",
+      //     expiresIn: jwtExpirySeconds,
+      //   });
+      //   updateResult.token = token;
+      //   console.log("before toen", updateResult.token);
+      // }
+      // console.log("after toen", updateResult);
       return res.status(200).json({
         message: "User Updated",
         status: "Success",
@@ -256,7 +230,7 @@ exports.sendEmail = (async (req, res) => {
       // generate otp here
       const code = getVerificationCode();
       // save otp here
-      const saveOtp = await User.findOneAndUpdate(email, { otp: code });
+      const saveOtp = await User.findByIdAndUpdate(result[0].id, { otp: code });
 
       const mailOptions = {
         from: "amrit37c@gmail.com",
@@ -306,7 +280,37 @@ exports.verifyOTP = (async (req, res) => {
 
     if (result.length) {
       // update password here otp here
-      const saveOtp = await User.findOneAndUpdate(email, { otp: "" });
+      const saveOtp = await User.findByIdAndUpdate(result[0].id, { otp: "" });
+      return res.status(200).json({
+        message: "OTP verified",
+        status: "Success",
+        // data: result,
+      });
+    }
+    return res.status(200).json({
+      message: "Invalid OTP",
+      status: "Failure",
+      // data: result,
+    });
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: `Failure${err}`,
+    });
+  }
+});
+exports.verifySignUpOTP = (async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const query = { email, otp };
+    const result = await User.find(query);
+
+    if (result.length) {
+      // update password here otp here
+      const saveOtp = await User.findByIdAndUpdate(result[0].id, { otp: "", verified: "true" }, { new: true });
+      if (saveOtp) {
+        console.log("save", saveOtp);
+      }
       return res.status(200).json({
         message: "OTP verified",
         status: "Success",
@@ -376,37 +380,6 @@ exports.getAll = (async (req, res) => {
 });
 
 
-exports.verifyOTP = (async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-    const query = { email, otp };
-    const result = await User.find(query);
-    console.log("resul", result);
-
-
-    if (result.length) {
-      // update password here otp here
-      const saveOtp = await User.findOneAndUpdate(email, { otp: "" });
-      return res.status(200).json({
-        message: "OTP verified",
-        status: "Success",
-        // data: result,
-      });
-    }
-    return res.status(200).json({
-      message: "Invalid OTP",
-      status: "Failure",
-      // data: result,
-    });
-  } catch (err) {
-    return res.status(404).json({
-      message: "No Data Found",
-      status: `Failure${err}`,
-    });
-  }
-});
-
-
 exports.verifyUser = (async (req, res) => {
   try {
     const { id: verifyCode } = req.params;
@@ -428,6 +401,54 @@ exports.verifyUser = (async (req, res) => {
     return res.status(200).send(
       "User Already Verified",
     );
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: `Failure${err}`,
+    });
+  }
+});
+
+exports.resendOTP = (async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const result = await User.find({ email });
+
+    console.log("result1");
+    if (result.length) {
+      // generate otp here
+      const code = getVerificationCode();
+      console.log("result2");
+      const userEmail = result[0].guardianEmail ? result[0].guardianEmail : result[0].email;
+
+      // save otp here
+      const saveOtp = await User.findByIdAndUpdate(result[0].id, { otp: code }, { new: true });
+      if (saveOtp) {
+        console.log(">>>", saveOtp);
+        console.log("result3");
+      }
+
+      const contentGu = {
+        email: result[0].guardianEmail ? result[0].guardianEmail : result[0].email,
+        subject: "Welcome to Write Awayy",
+        text: `Please Enter This OTP  ${code}`,
+      };
+
+      const sendEmail = utils.sendEmail(contentGu);
+      if (sendEmail) {
+        console.log("EMAIL SEND DONE");
+        console.log("result4");
+        return res.status(200).json({
+          status: "Success",
+          message: "OTP SEND",
+        });
+      }
+    }
+    return res.status(200).json({
+      status: "Success",
+      message: "User Already Verified",
+    });
   } catch (err) {
     return res.status(404).json({
       message: "No Data Found",
