@@ -393,24 +393,22 @@ exports.updateRead = (async (req, res) => {
   try {
     req.body.readCount = req.user;
 
-    const user = await Blog.find({ _id: req.params.id, readCount: { $in: [mongoose.Types.ObjectId(req.user)] } }).countDocuments();
+    // const user = await Blog.find({ _id: req.params.id, readCount: { $in: [mongoose.Types.ObjectId(req.user)] } }).countDocuments();
 
-    if (!user) {
-      const result = await Blog.findByIdAndUpdate(req.params.id, { $push: req.body }, { new: true });
+    const result = await Blog.findByIdAndUpdate(req.params.id, { $push: req.body }, { new: true });
 
-      if (result) {
-        return res.status(200).json({
-          message: "User Read Updated",
-          status: "Success",
-          data: result,
-        });
-      }
-    } else {
+    if (result) {
       return res.status(200).json({
-        message: "User Already Read this blg",
+        message: "User Read Updated",
         status: "Success",
+        data: result,
       });
     }
+
+    return res.status(200).json({
+      message: "User Already Read this blg",
+      status: "Success",
+    });
   } catch (error) {
     return res.status(409).json({
       message: error.message,

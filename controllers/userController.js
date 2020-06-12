@@ -4,6 +4,9 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const User = require("../models/userModel");
 const VerifyUser = require("../models/verifyUserModel");
+const FeedBack = require("../models/userFeedBack");
+const Testimonial = require("../models/userTestimonial");
+const Contact = require("../models/userContactUs");
 
 const jwtKey = "my_secret_key";
 
@@ -448,6 +451,150 @@ exports.resendOTP = (async (req, res) => {
     return res.status(200).json({
       status: "Success",
       message: "User Already Verified",
+    });
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: `Failure${err}`,
+    });
+  }
+});
+exports.sendFeedBack = (async (req, res) => {
+  try {
+    const result = await FeedBack(req.body).save();
+
+    if (result) {
+      const { email, feedback } = req.body;
+      // user email
+      const userEmail = {
+        email: req.body.email,
+        subject: "Write Awayy",
+        text: "Thanks for the feedback",
+      };
+
+      const sendEmail = utils.sendEmail(userEmail);
+
+      const message = `${email} has shared feedback<br/> ${feedback}`;
+
+      // writeaway email
+      const sysEmail = {
+        email: "feedback@writeawayy.com",
+        subject: "User Feedback",
+        text: message,
+      };
+
+      const sendSysEmail = utils.sendEmail(sysEmail);
+      if (sendSysEmail) {
+        console.log("System EMAIL SEND DONE");
+      }
+
+      if (sendEmail) {
+        console.log("User EMAIL SEND DONE");
+        return res.status(200).json({
+          status: "Success",
+          message: "Thanks for the feedback",
+        });
+      }
+    }
+    return res.status(200).json({
+      status: "Success",
+      message: "Data Not found",
+    });
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: `Failure${err}`,
+    });
+  }
+});
+exports.sendTestimonial = (async (req, res) => {
+  try {
+    const result = await Testimonial(req.body).save();
+
+    if (result) {
+      const { email, testimonial } = req.body;
+      // user email
+      const userEmail = {
+        email: req.body.email,
+        subject: "Write Awayy",
+        text: "We Will contact you shortly",
+      };
+
+      const sendEmail = utils.sendEmail(userEmail);
+
+      const message = `${email} wants to know something: <br/> ${testimonial}`;
+
+      // writeaway email
+      const sysEmail = {
+        email: "testimonials@writeawayy.com",
+        subject: "User Testimonials",
+        text: message,
+      };
+
+      const sendSysEmail = utils.sendEmail(sysEmail);
+      if (sendSysEmail) {
+        console.log("System EMAIL SEND DONE");
+      }
+
+      if (sendEmail) {
+        console.log("User EMAIL SEND DONE");
+        return res.status(200).json({
+          status: "Success",
+          message: "Thanks for the feedback",
+        });
+      }
+    }
+    return res.status(200).json({
+      status: "Success",
+      message: "Data Not found",
+    });
+  } catch (err) {
+    return res.status(404).json({
+      message: "No Data Found",
+      status: `Failure${err}`,
+    });
+  }
+});
+exports.sendContactUs = (async (req, res) => {
+  try {
+    const result = await Contact(req.body).save();
+
+    if (result) {
+      const { email, info } = req.body;
+      // user email
+      const userEmail = {
+        email: req.body.email,
+        subject: "Write Awayy",
+        text: "We will contact You shortly",
+      };
+
+      const sendEmail = utils.sendEmail(userEmail);
+
+      const message = `${email} has contacts us: <br/> ${info}`;
+
+      // writeaway email
+      const sysEmail = {
+        email: "contactus@writeawayy.com",
+        subject: "User Contat Us",
+        text: message,
+      };
+
+      const sendSysEmail = utils.sendEmail(sysEmail);
+      if (sendSysEmail) {
+        console.log("System EMAIL SEND DONE");
+      }
+
+      if (sendEmail) {
+        console.log("User EMAIL SEND DONE");
+        return res.status(200).json({
+          status: "Success",
+          message: "Thanks for the feedback",
+        });
+      }
+    }
+    return res.status(200).json({
+      status: "Success",
+      message: "Data Not found",
     });
   } catch (err) {
     return res.status(404).json({
