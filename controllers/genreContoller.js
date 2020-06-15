@@ -33,10 +33,10 @@ exports.getAll = (async (req, res) => {
     // { isDeleted: false }
     let sort = { createdAt: -1 || req.query.sort };
     if (req.query.sort === "-createdAt") {
-      sort = { created: 1 };
+      sort = { created: -1 };
     }
     if (req.query.sort === "createdAt") {
-      sort = { created: -1 };
+      sort = { created: 1 };
     }
     if (req.query.sort === "-title") {
       sort = { title: -1 };
