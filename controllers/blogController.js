@@ -11,6 +11,7 @@ exports.save = (async (req, res) => {
     req.body.media520 = req.file[0] ? req.file[0] : "";
     req.body.media690 = req.file[1] ? req.file[1] : "";
     req.body.media138 = req.file[2] ? req.file[2] : "";
+    req.body.media339 = req.file[3] ? req.file[3] : "";
     if (req.body.activeBlog) {
       const disableActiveBlog = await Blog.findOneAndUpdate({ activeBlog: true }, { activeBlog: false }, { new: true });
     }
@@ -62,7 +63,7 @@ exports.getAll = (async (req, res) => {
 
     query.isDeleted = false;
 
-    const aggregateSort = { $sort: { updatedAt: -1 } };
+    const aggregateSort = { $sort: { createdAt: -1 } };
 
 
     if (req.user) {
@@ -285,6 +286,7 @@ exports.update = (async (req, res) => {
       req.body.media520 = req.file[0] ? req.file[0] : "";
       req.body.media690 = req.file[1] ? req.file[1] : "";
       req.body.media138 = req.file[2] ? req.file[2] : "";
+      req.body.media339 = req.file[3] ? req.file[3] : "";
     }
     if (req.body.activeBlog) {
       const disableActiveBlog = await Blog.findOneAndUpdate({ activeBlog: true }, { activeBlog: false }, { new: true });
@@ -718,7 +720,7 @@ exports.getFilterBlog = (async (req, res) => {
 
     query.isDeleted = false;
 
-    const aggregateSort = { $sort: { updatedAt: -1 } };
+    const aggregateSort = { $sort: { createdAt: -1 } };
 
 
     const bmLookUp = {

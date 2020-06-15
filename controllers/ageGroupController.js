@@ -1,5 +1,11 @@
 const AgeGroup = require("../models/ageGroupModel");
 
+function getAgeRange(range) {
+  const ageRangeArr = range.split(",");
+  return ageRangeArr;
+}
+
+
 exports.save = (async (req, res) => {
   try {
     const { ageRange } = req.body;
@@ -23,7 +29,7 @@ exports.save = (async (req, res) => {
 exports.getAll = (async (req, res) => {
   try {
     const query = req.query || { };
-    const sort = { createdAt: -1 };
+    const sort = { createdAt: -1 || req.sort };
     query.isDeleted = false;
 
     const result = await AgeGroup.find(query).sort(sort);
@@ -106,9 +112,3 @@ exports.update = (async (req, res) => {
     });
   }
 });
-
-
-function getAgeRange(range) {
-  const ageRangeArr = range.split(",");
-  return ageRangeArr;
-}

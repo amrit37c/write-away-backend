@@ -9,27 +9,24 @@ const Genre = require("../models/genreModel");
 
 exports.save = (async (req, res) => {
   try {
-    req.body.mediaCover = `${req.files.mediaCover[0].filename}`;
+    console.log(">>>>>>>>", req.file);
+    // req.body.mediaCover = `${req.files.mediaCover[0].filename}`;
+    if (req.file) {
+      // req.body.media = `${req.file.filename}`;
+      req.body.mediaCover = `${req.file[0]}`;
+      req.body.media350 = req.file[0] ? req.file[0] : "";
+      req.body.media525 = req.file[1] ? req.file[1] : "";
+      req.body.media142 = req.file[2] ? req.file[2] : "";
+    }
 
     const { category } = req.body;
     if (category !== "1") {
       req.body.categoryContent = `${req.files.categoryContent[0].filename}`;
     }
-    // const genres = [];
-    // const ages = [];
-    // const genreDescription = [];
-    // genres.push(req.body.genres);
-    // ages.push(req.body.ages);
-    // genreDescription.push(req.body.ages);
-    // req.body.genres = genres;
-    // .push();
-    // req.body.ageGroup.push(req.body.ageGroup);
-    // req.body.ageGroup = ages;
-    // req.body.genreDescription = genreDescription;
+
     const genresArr = req.body.genres.split(",");
     const ageGroupArr = req.body.ageGroup.split(",");
-    // const genreDescriptionArr = req.body.genreDescription.split(",");
-    console.log("+++ ", req.body);
+
 
     const genres = {
       $push: genresArr,
@@ -63,7 +60,7 @@ exports.getAll = (async (req, res) => {
     const query = req.query || { };
     const sort = { createdAt: -1 };
 
-    console.log("req.user.id", req.user);
+    // console.log("req.user.id", req.user);
 
     const finalQuery = [];
     if (query.isPublished) {
@@ -175,7 +172,32 @@ exports.getAll = (async (req, res) => {
       { $sort: { createdAt: -1 } },
       {
         $project: {
-          title: 1, mediaCover: 1, brief: 1, gender: 1, genreDescription: 1, closingDate: 1, ageGroup: 1, kickstarter: 1, kickbookDesc: 1, isActive: 1, isPublished: 1, publicationStatus: 1, publicationRights: 1, wordCount: 1, commercials: 1, language: 1, category: 1, categoryContent: 1, followers: 1, createdAt: 1, genres: "$genres", userPublication: "$userPublication", bookmark: "$bookmark",
+          title: 1,
+          mediaCover: 1,
+          brief: 1,
+          gender: 1,
+          genreDescription: 1,
+          closingDate: 1,
+          ageGroup: 1,
+          kickstarter: 1,
+          kickbookDesc: 1,
+          isActive: 1,
+          isPublished: 1,
+          publicationStatus: 1,
+          publicationRights: 1,
+          wordCount: 1,
+          commercials: 1,
+          language: 1,
+          category: 1,
+          categoryContent: 1,
+          followers: 1,
+          createdAt: 1,
+          media142: 1,
+          media350: 1,
+          media525: 1,
+          genres: "$genres",
+          userPublication: "$userPublication",
+          bookmark: "$bookmark",
         },
       },
       {
@@ -186,7 +208,7 @@ exports.getAll = (async (req, res) => {
     );
 
     const result = await Publication.aggregate(finalQuery);
-    console.log("final", finalQuery);
+    // console.log("final", finalQuery);
 
     if (result) {
       // const response =  result.map()
@@ -354,8 +376,6 @@ exports.saveBookMark = (async (req, res) => {
 
 exports.updateBookMark = (async (req, res) => {
   try {
-    console.log("req", req.user);
-    console.log("req1", req.params.id);
     req.body.publishedBy = req.user;
     const result = await BookMarkPublication.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (result) {
@@ -468,6 +488,10 @@ exports.getAllPublictionAd = (async (req, res) => {
           categoryContent: 1,
           followers: 1,
           createdAt: 1,
+          media142: 1,
+          media350: 1,
+          media525: 1,
+          // media142: 1,
           genres: "$genres",
           agegroups: "$agegroups",
           //  userPublication: "$userPublication", bookmark: "$bookmark",

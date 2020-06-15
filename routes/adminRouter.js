@@ -38,26 +38,75 @@ const thumbnail = (async (req, res, next) => {
       thumb
         .resize(593, 492) // resize
         .quality(60) // set JPEG quality
-        .write(`media/${img[0]}-520*481.${ext}`); // save
+        .write(`media/${img[0]}-520x481.${ext}`); // save
 
 
-      file.push(`${img[0]}-520*481.${ext}`);
+      file.push(`${img[0]}-520x481.${ext}`);
 
       // generate thumnail for blog page
 
       thumb
         .resize(873, 602) // resize
         .quality(60) // set JPEG quality
-        .write(`media/${img[0]}-690*572.${ext}`); // save
+        .write(`media/${img[0]}-690x572.${ext}`); // save
 
-      file.push(`${img[0]}-690*572.${ext}`);
+      file.push(`${img[0]}-690x572.${ext}`);
 
       thumb
         .resize(180, 222) // resize
         .quality(60) // set JPEG quality
-        .write(`media/${img[0]}-138*170.${ext}`); // save
+        .write(`media/${img[0]}-138x170.${ext}`); // save
 
-      file.push(`${img[0]}-138*170.${ext}`);
+      thumb
+        .resize(339, 173) // resize
+        .quality(60) // set JPEG quality
+        .write(`media/${img[0]}-339x173.${ext}`); // save
+
+      file.push(`${img[0]}-339x173.${ext}`);
+
+      req.file = file;
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
+
+const thumbnailPublisher = (async (req, res, next) => {
+  // Create thumnail of an image;
+  console.log(">>", req.file);
+  if (req.file) {
+    const ext = req.file.filename.split(".").pop();
+    const img = req.file.filename.split(".");
+
+    const thumb = await Jimp.read(`media/${req.file.filename}`);
+    if (thumb) {
+      const file = [];
+      // generate thumnail for home page
+      thumb
+        .resize(350, 432) // resize
+        .quality(60) // set JPEG quality
+        .write(`media/${img[0]}-350x432.${ext}`); // save
+
+
+      file.push(`${img[0]}-350x432.${ext}`);
+
+      // generate thumnail for blog page
+
+      thumb
+        .resize(525, 647) // resize
+        .quality(60) // set JPEG quality
+        .write(`media/${img[0]}-525x647.${ext}`); // save
+
+      file.push(`${img[0]}-525x647.${ext}`);
+
+      thumb
+        .resize(142, 180) // resize
+        .quality(60) // set JPEG quality
+        .write(`media/${img[0]}-142x180.${ext}`); // save
+
+      file.push(`${img[0]}-142x180.${ext}`);
 
       req.file = file;
       next();
@@ -98,8 +147,8 @@ router.post("/test", uploads.single("media"), thumbnail, (async (req, res) => {
 router.get("/publication/publication-home", publicationController.getAllPublicationStatAdmin);
 router.get("/publication/", middleware.authenticatedUser, publicationController.getAllPublictionAd);
 router.get("/publication/:id", publicationController.getOne);
-router.post("/publication/", uploads.fields([{ name: "mediaCover", maxCount: 1 }, { name: "categoryContent", maxCount: 1 }]), publicationController.save);
-router.put("/publication/:id", uploads.fields([{ name: "mediaCover", maxCount: 1 }, { name: "categoryContent", maxCount: 1 }]), publicationController.update);
+router.post("/publication/", uploads.single("mediaCover"), thumbnailPublisher, publicationController.save);
+router.put("/publication/:id", uploads.single("mediaCover"), thumbnailPublisher, publicationController.update);
 router.put("/publication-update/:id", publicationController.update);
 
 // save user content for publication

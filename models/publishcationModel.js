@@ -16,6 +16,18 @@ const schema = new mongoose.Schema({
     trim: true,
     required: [true, "Media Image is required"],
   },
+  media350: {
+    type: String,
+    trim: true,
+  },
+  media525: {
+    type: String,
+    trim: true,
+  },
+  media142: {
+    type: String,
+    trim: true,
+  },
   brief: {
     type: String,
     trim: true,

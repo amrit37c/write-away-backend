@@ -31,8 +31,8 @@ exports.getAll = (async (req, res) => {
     const query = req.query || {};
     query.isDeleted = false;
     // { isDeleted: false }
-    const sort = { createdAt: -1 };
-    console.log("query", query);
+    const sort = { createdAt: -1 || req.query.sort };
+    console.log("query", req.query.sort);
     const result = await Genre.find(query).sort(sort);
     if (result) {
       return res.status(200).json({

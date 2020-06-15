@@ -226,7 +226,7 @@ exports.sendEmail = (async (req, res) => {
         service: "gmail",
         auth: {
           user: "amrit37c@gmail.com",
-          pass: "Nishansingh@12345",
+          pass: "fkkeogzpqvwscehv",
         },
       });
 

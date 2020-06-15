@@ -30,6 +30,10 @@ const blogSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  media339: {
+    type: String,
+    trim: true,
+  },
   readCount: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "users",

@@ -163,11 +163,12 @@ function getVerificationCode() {
 exports.sendEmail = (async (data) => {
   const { email, subject, text } = data;
   console.log("EMAIL FOUND", email);
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: "amrit37c@gmail.com",
-      pass: "Nishansingh@12345",
+      pass: "fkkeogzpqvwscehv",
     },
   });
 
@@ -181,8 +182,10 @@ exports.sendEmail = (async (data) => {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
+      console.log("err", error);
       return error;
     }
+    console.log("info", info);
     return info;
   });
 });
