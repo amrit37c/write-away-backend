@@ -16,6 +16,8 @@ const storage = multer.diskStorage({
 });
 
 const uploads = multer({ storage });
+router.get("/recent-writing", middleware.authenticatedUser, controller.getRecentWriting);
+router.get("/following", middleware.authenticatedUser, controller.getFollowing);
 
 router.get("/", middleware.authenticatedUser, controller.getAll);
 router.get("/:id", middleware.authenticatedUser, controller.getOne);
@@ -36,7 +38,9 @@ router.put("/publication-like/:id", middleware.authenticateUser, controller.upda
 
 
 // share publication
+
 // social share
 router.post("/publication-share/:id", middleware.authenticatedUser, controller.updateShare);
+
 
 module.exports = router;

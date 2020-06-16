@@ -33,17 +33,17 @@ exports.getAll = (async (req, res) => {
     // { isDeleted: false }
     let sort = { createdAt: -1 || req.query.sort };
     if (req.query.sort === "-createdAt") {
-      sort = { created: -1 };
+      sort = { createdAt: -1 };
     }
     if (req.query.sort === "createdAt") {
-      sort = { created: 1 };
+      sort = { createdAt: 1 };
     }
-    if (req.query.sort === "-title") {
-      sort = { title: -1 };
+    if (req.query.sort === "title") {
+      sort = { title: 1 };
     }
     delete query.sort;
-    console.log(query);
-    console.log(query);
+    // console.log(query);
+
     const result = await Genre.find(query).sort(sort);
     if (result) {
       return res.status(200).json({

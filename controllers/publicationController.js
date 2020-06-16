@@ -6,6 +6,7 @@ const PublicationLike = require("../models/publicationLikeModel");
 const PublicationShare = require("../models/socialShareBlogModelPublication");
 const AgeGroup = require("../models/ageGroupModel");
 const Genre = require("../models/genreModel");
+const publicationBookMarkModel = require("../models/publicationBookMarkModel");
 
 exports.save = (async (req, res) => {
   try {
@@ -661,6 +662,59 @@ exports.updateShare = (async (req, res) => {
 
 
     const result = await PublicationShare(req.body).save();
+
+    if (result) {
+      return res.status(200).json({
+        message: "User Share Updated",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+// GET RECENT WRITING
+exports.getRecentWriting = (async (req, res) => {
+  try {
+    req.body.publishedBy = req.user;
+
+    const query = {
+      publishedBy: req.user,
+    };
+    console.log(">>", query);
+
+    const result = await UserPublication.find(query).populate({ path: "publicationId", model: Publication });
+
+    if (result) {
+      return res.status(200).json({
+        message: "User Share Updated",
+        status: "Success",
+        data: result,
+      });
+    }
+  } catch (error) {
+    return res.status(409).json({
+      message: error.message,
+      status: "Failure",
+    });
+  }
+});
+
+
+// GET RECENT WRITING
+exports.getFollowing = (async (req, res) => {
+  try {
+    const { user } = req;
+
+
+    console.log(">>");
+
+    const result = await publicationBookMarkModel.find({ user }).populate({ path: "publicationId", model: Publication });
 
     if (result) {
       return res.status(200).json({

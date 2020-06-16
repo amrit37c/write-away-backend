@@ -65,15 +65,25 @@ exports.saveUser = (async (req, res) => {
       const sendEmail = utils.sendEmail(contentGu);
       if (sendEmail) {
         console.log("EMAIL SEND DONE");
-      }
 
-      const parent = req.body.guardianEmail ? " parent " : "";
-      const message = `Thank you for registering with us! A message with
+        const parent = req.body.guardianEmail ? " parent " : "";
+        const message = `Thank you for registering with us! A message with
        a confirmation link has been sent to your ${parent} 
        email address. Please follow the link to activate your account.`;
 
+        return res.status(201).json({
+          message,
+          status: "Success",
+        });
+      }
+
+      // const parent = req.body.guardianEmail ? " parent " : "";
+      // const message = `Thank you for registering with us! A message with
+      //  a confirmation link has been sent to your ${parent}
+      //  email address. Please follow the link to activate your account.`;
+
       return res.status(201).json({
-        message,
+        // message,
         status: "Success",
       });
     }
