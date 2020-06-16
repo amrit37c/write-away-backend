@@ -4,7 +4,7 @@ const Joi = require("@hapi/joi");
 exports.validate = (async (req, res, next) => {
   const schema = Joi.object({
     firstName: Joi.string()
-      .alphanum()
+      // .alphanum()
       .min(3)
       .max(30)
       .required()
