@@ -165,12 +165,12 @@ exports.sendEmail = (async (data) => {
   console.log("EMAIL FOUND", email);
 
   const transporter = nodemailer.createTransport({
-    service: "SendGrid",
+    service: "gmail",
     auth: {
-      user: "apikey",
-      pass: "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",
-      // user: "amrit37c@gmail.com",
-      // pass: "fkkeogzpqvwscehv",
+      // user: "apikey",
+      // pass: "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",
+      user: "kumarrohit00294@gmail.com",
+      pass: "ezblobyfetoteclj",
     },
   });
 
