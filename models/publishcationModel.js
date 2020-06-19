@@ -76,7 +76,6 @@ const schema = new mongoose.Schema({
     enum: [1, 2, 3, 4], // 1 - unopen, 2- open, 3 - closed, 4 - rejected
     default: 1,
   },
-  // git
   isDeleted: {
     type: Boolean,
     default: false,

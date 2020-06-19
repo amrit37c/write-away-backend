@@ -10,6 +10,7 @@ const ageGroupRouter = require("./routes/ageGroupRouter");
 const publicationRouter = require("./routes/publicationRouter");
 const dashboardRouter = require("./routes/dashboardRouter");
 const adminRouter = require("./routes/adminRouter");
+const volumeRouter = require("./routes/volumeRouter");
 
 app.get("/", (req, res) => res.send("Welcome to Write Away app"));
 
@@ -43,6 +44,7 @@ app.use("/api/v1/admin/age-group", ageGroupRouter);
 app.use("/api/v1/publication", publicationRouter);
 app.use("/api/v1/admin-dashboard", dashboardRouter);
 app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/volume", volumeRouter);
 // 404 - NOT FOUND ROUTE
 app.all("*", (req, res, next, err) => {
 // next(new AppError(`Reuested resource, ${req.originalUrl} not found!`, 404));
